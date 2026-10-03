@@ -2,12 +2,14 @@
 abstract final class AppRoutes {
   static const splash = '/splash';
   static const onboarding = '/onboarding';
+  static const permissions = '/permissions';
 
   static const home = '/home';
   static const settings = '$home/settings';
   static const reminders = '$settings/reminders';
   static const preferences = '$settings/preferences';
   static const devices = '$settings/devices';
+  static const permissionsSettings = '$settings/permissions';
 
   static const workouts = '/workouts';
   static const activeWorkout = '$workouts/active';

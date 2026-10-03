@@ -325,7 +325,7 @@ class WellnessStore extends ChangeNotifier {
 
   /// Schedules (or cancels) the alert for when the running fast hits its
   /// goal. Best effort: a missing permission just means no alert.
-  Future<void> _syncFastAlert({bool askPermission = false}) async {
+  Future<void> _syncFastAlert() async {
     try {
       final scheduler = getIt<ReminderScheduler>();
       final goal = fastStart.add(Duration(hours: fastHours));
@@ -333,7 +333,6 @@ class WellnessStore extends ChangeNotifier {
         await scheduler.cancelOnce(_fastAlertId);
         return;
       }
-      if (askPermission && !await scheduler.requestPermission()) return;
       await scheduler.scheduleOnce(
         id: _fastAlertId,
         title: 'Fast complete',
@@ -351,7 +350,7 @@ class WellnessStore extends ChangeNotifier {
     fastStart = DateTime.now();
     final id = _activeFastId = _ids.generate();
     notifyListeners();
-    _syncFastAlert(askPermission: true);
+    _syncFastAlert();
     _data?.insertFast(
       FastingSessionsCompanion.insert(
         id: id,

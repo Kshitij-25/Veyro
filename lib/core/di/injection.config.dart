@@ -15,6 +15,7 @@ import 'package:fitness_trakcer/core/di/modules/database_module.dart' as _i365;
 import 'package:fitness_trakcer/core/di/modules/network_module.dart' as _i162;
 import 'package:fitness_trakcer/core/di/modules/platform_module.dart' as _i196;
 import 'package:fitness_trakcer/core/router/app_router.dart' as _i951;
+import 'package:fitness_trakcer/core/router/startup_gate.dart' as _i20;
 import 'package:fitness_trakcer/core/utils/clock.dart' as _i369;
 import 'package:fitness_trakcer/core/utils/id_generator.dart' as _i586;
 import 'package:fitness_trakcer/features/activity/data/datasources/activity_local_data_source.dart'
@@ -620,6 +621,9 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i369.Clock>(),
       ),
     );
+    gh.lazySingleton<_i20.StartupGate>(
+      () => _i20.StartupGate(gh<_i695.WellnessLocalDataSource>()),
+    );
     gh.lazySingleton<_i77.ProgramRepository>(
       () => _i157.ProgramRepositoryImpl(gh<_i695.WellnessLocalDataSource>()),
     );
@@ -864,6 +868,9 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i369.Clock>(),
       ),
     );
+    gh.lazySingleton<_i951.AppRouter>(
+      () => _i951.AppRouter(gh<_i946.ProfileCubit>(), gh<_i20.StartupGate>()),
+    );
     gh.lazySingleton<_i968.CreateGoal>(
       () => _i968.CreateGoal(
         gh<_i492.GoalRepository>(),
@@ -890,9 +897,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i192.GetRoutine>(),
         gh<_i254.SaveRoutine>(),
       ),
-    );
-    gh.lazySingleton<_i951.AppRouter>(
-      () => _i951.AppRouter(gh<_i946.ProfileCubit>()),
     );
     gh.lazySingleton<_i151.CheckInsCubit>(
       () => _i151.CheckInsCubit(

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:fitness_trakcer/core/di/injection.dart';
+import 'package:fitness_trakcer/core/router/startup_gate.dart';
 import 'package:fitness_trakcer/core/usecase/use_case.dart';
 import 'package:fitness_trakcer/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:fitness_trakcer/features/reminders/domain/usecases/reschedule_all_reminders.dart';
@@ -19,6 +20,7 @@ Future<void> bootstrap() async {
   await getIt<ExerciseLocalDataSource>().seedIfEmpty();
 
   await WellnessStore.instance.init(getIt<WellnessLocalDataSource>());
+  await getIt<StartupGate>().start();
   getIt<ProfileCubit>().start();
   getIt<ActiveWorkoutCubit>().start();
 

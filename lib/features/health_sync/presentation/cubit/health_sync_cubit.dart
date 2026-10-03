@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:fitness_trakcer/core/error/failures.dart';
 import 'package:fitness_trakcer/core/usecase/use_case.dart';
 import 'package:fitness_trakcer/core/utils/clock.dart';
@@ -95,7 +97,10 @@ class HealthSyncCubit extends Cubit<HealthSyncState> {
     await sync();
   }
 
-  Future<void> connect() async {
+  /// Asks for Health access. Returns as soon as the permission step is over
+  /// (whether or not it was granted); the first sync and the history import
+  /// carry on in the background, reported through the state.
+  Future<bool> connect() async {
     final result = await _requestAccess(const NoParams());
     final access = result.dataOrNull ?? state.access;
     if (access == HealthAccessStatus.granted) {
@@ -112,10 +117,15 @@ class HealthSyncCubit extends Cubit<HealthSyncState> {
       ),
     );
     if (access == HealthAccessStatus.granted) {
-      await sync(days: _firstSyncDays);
-      // First connection: bring in everything Health has.
-      if (!state.historyComplete) await importHistory();
+      unawaited(_firstImport());
     }
+    return access == HealthAccessStatus.granted;
+  }
+
+  Future<void> _firstImport() async {
+    await sync(days: _firstSyncDays);
+    // First connection: bring in everything Health has.
+    if (!state.historyComplete) await importHistory();
   }
 
   bool _cancelHistory = false;

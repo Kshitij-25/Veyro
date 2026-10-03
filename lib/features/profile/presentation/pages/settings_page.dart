@@ -77,6 +77,11 @@ class SettingsPage extends StatelessWidget {
                             () => context.go(AppRoutes.devices),
                           ),
                           (
+                            'Permissions',
+                            'Health, notifications, location, camera',
+                            () => context.go(AppRoutes.permissionsSettings),
+                          ),
+                          (
                             'Nutrition targets',
                             '${thousands(store.kcalGoal)} kcal',
                             () => context.go(AppRoutes.nutritionTargets),
