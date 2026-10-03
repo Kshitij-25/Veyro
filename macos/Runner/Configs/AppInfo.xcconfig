@@ -8,7 +8,7 @@
 PRODUCT_NAME = Veyro
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.kshitijcodecraft.fitnessTrakcer
+PRODUCT_BUNDLE_IDENTIFIER = com.kshitijcodecraft.veyro
 
 // The copyright displayed in application information
 PRODUCT_COPYRIGHT = Copyright © 2026 com.kshitijcodecraft. All rights reserved.
