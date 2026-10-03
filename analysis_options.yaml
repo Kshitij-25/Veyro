@@ -1,0 +1,23 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - build/**
+    - android/**
+    - ios/**
+    - web/**
+    - windows/**
+    - macos/**
+    - linux/**
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - "**/*.config.dart"
+
+linter:
+  rules:
+    - always_use_package_imports
+    - prefer_single_quotes
+    - prefer_final_locals
+    - avoid_print
+    - unawaited_futures
+    - directives_ordering

@@ -1,0 +1,1 @@
+enum ActivitySource { health, manual }
