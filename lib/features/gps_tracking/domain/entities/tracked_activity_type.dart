@@ -2,11 +2,18 @@
 enum TrackedActivityType {
   run('Run'),
   walk('Walk'),
-  cycle('Cycle');
+  cycle('Cycle'),
+
+  /// Any other workout imported from Health (gym, yoga...). Never recorded
+  /// with GPS here.
+  other('Workout');
 
   const TrackedActivityType(this.label);
 
   final String label;
+
+  /// Whether the GPS recorder offers this type.
+  bool get isRecordable => this != other;
 
   /// Highest plausible speed; faster GPS jumps are treated as noise.
   double get maxSpeedMetersPerSecond => switch (this) {
@@ -21,5 +28,6 @@ enum TrackedActivityType {
       kmh < 8 ? 8.3 : (kmh < 10 ? 9.8 : (kmh < 12 ? 11.0 : 12.5)),
     TrackedActivityType.cycle =>
       kmh < 16 ? 6.8 : (kmh < 20 ? 8.0 : (kmh < 25 ? 10.0 : 12.0)),
+    TrackedActivityType.other => 5.0,
   };
 }

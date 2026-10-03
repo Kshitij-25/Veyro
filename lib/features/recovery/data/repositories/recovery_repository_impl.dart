@@ -1,6 +1,7 @@
 import 'package:fitness_trakcer/core/utils/date_range.dart';
 import 'package:fitness_trakcer/core/utils/result.dart';
 import 'package:fitness_trakcer/features/activity/data/datasources/health_data_source.dart';
+import 'package:fitness_trakcer/features/recovery/domain/entities/heart_rate_zones.dart';
 import 'package:fitness_trakcer/features/recovery/domain/entities/recovery_snapshot.dart';
 import 'package:fitness_trakcer/features/recovery/domain/repositories/recovery_repository.dart';
 import 'package:injectable/injectable.dart';
@@ -28,5 +29,16 @@ class RecoveryRepositoryImpl implements RecoveryRepository {
           sleepMinutes: r.sleepMinutes,
         ),
     ]);
+  });
+
+  @override
+  Future<Result<List<HeartRateSampleInput>>> getHeartRateSamples({
+    required DateTime now,
+    required int days,
+  }) => guard(() async {
+    final samples = await _health.getHeartRateSamples(
+      DateRange.lastDays(days, until: now),
+    );
+    return [for (final s in samples) HeartRateSampleInput(s.time, s.bpm)];
   });
 }

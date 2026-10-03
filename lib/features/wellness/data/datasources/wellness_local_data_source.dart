@@ -77,4 +77,34 @@ class WellnessLocalDataSource {
       _db.habitCompletions,
     )..where((t) => t.habitId.equals(habitId) & t.day.equals(day))).go();
   }
+
+  // ---- fasting ----
+  /// Newest first.
+  Future<List<FastRow>> getFasts({int limit = 30}) =>
+      (_db.select(_db.fastingSessions)
+            ..orderBy([(t) => OrderingTerm.desc(t.startedAt)])
+            ..limit(limit))
+          .get();
+
+  Future<void> insertFast(FastingSessionsCompanion fast) =>
+      _db.into(_db.fastingSessions).insert(fast);
+
+  Future<void> updateFast(String id, FastingSessionsCompanion changes) =>
+      (_db.update(
+        _db.fastingSessions,
+      )..where((t) => t.id.equals(id))).write(changes);
+
+  Future<void> deleteFast(String id) =>
+      (_db.delete(_db.fastingSessions)..where((t) => t.id.equals(id))).go();
+
+  // ---- mind ----
+  /// Newest first.
+  Future<List<MindRow>> getMindSessions({int limit = 60}) =>
+      (_db.select(_db.mindSessions)
+            ..orderBy([(t) => OrderingTerm.desc(t.startedAt)])
+            ..limit(limit))
+          .get();
+
+  Future<void> insertMind(MindSessionsCompanion session) =>
+      _db.into(_db.mindSessions).insert(session);
 }

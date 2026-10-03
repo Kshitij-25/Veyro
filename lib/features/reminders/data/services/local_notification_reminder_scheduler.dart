@@ -116,6 +116,40 @@ class LocalNotificationReminderScheduler implements ReminderScheduler {
   }
 
   @override
+  Future<void> scheduleOnce({
+    required int id,
+    required String title,
+    required String body,
+    required DateTime at,
+  }) async {
+    await _ensureInitialized();
+    await _plugin.cancel(id: id);
+    if (!at.isAfter(DateTime.now())) return;
+    await _plugin.zonedSchedule(
+      id: id,
+      title: title,
+      body: body,
+      scheduledDate: tz.TZDateTime.from(at, tz.local),
+      notificationDetails: const NotificationDetails(
+        android: AndroidNotificationDetails(
+          _channelId,
+          _channelName,
+          channelDescription: 'Workout, fasting and weigh-in reminders',
+        ),
+        iOS: DarwinNotificationDetails(),
+        macOS: DarwinNotificationDetails(),
+      ),
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+    );
+  }
+
+  @override
+  Future<void> cancelOnce(int id) async {
+    await _ensureInitialized();
+    await _plugin.cancel(id: id);
+  }
+
+  @override
   Future<void> cancelAll() async {
     await _ensureInitialized();
     await _plugin.cancelAll();

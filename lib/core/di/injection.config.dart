@@ -56,13 +56,31 @@ import 'package:fitness_trakcer/features/body_metrics/domain/usecases/log_body_m
 import 'package:fitness_trakcer/features/body_metrics/domain/usecases/update_body_measurement.dart'
     as _i807;
 import 'package:fitness_trakcer/features/body_metrics/domain/usecases/watch_body_measurements.dart'
-    as _i284;
+    as _i285;
 import 'package:fitness_trakcer/features/body_metrics/presentation/cubit/body_metrics_cubit.dart'
     as _i849;
 import 'package:fitness_trakcer/features/dashboard/domain/usecases/get_dashboard_summary.dart'
     as _i711;
 import 'package:fitness_trakcer/features/dashboard/presentation/cubit/dashboard_cubit.dart'
     as _i656;
+import 'package:fitness_trakcer/features/data_management/data/repositories/data_management_repository_impl.dart'
+    as _i347;
+import 'package:fitness_trakcer/features/data_management/domain/repositories/data_management_repository.dart'
+    as _i284;
+import 'package:fitness_trakcer/features/data_management/domain/usecases/data_management_use_cases.dart'
+    as _i778;
+import 'package:fitness_trakcer/features/food_catalog/data/datasources/open_food_facts_data_source.dart'
+    as _i454;
+import 'package:fitness_trakcer/features/food_catalog/data/datasources/saved_food_local_data_source.dart'
+    as _i958;
+import 'package:fitness_trakcer/features/food_catalog/data/datasources/usda_data_source.dart'
+    as _i228;
+import 'package:fitness_trakcer/features/food_catalog/data/repositories/food_catalog_repository_impl.dart'
+    as _i923;
+import 'package:fitness_trakcer/features/food_catalog/domain/repositories/food_catalog_repository.dart'
+    as _i659;
+import 'package:fitness_trakcer/features/food_catalog/presentation/cubit/food_catalog_cubit.dart'
+    as _i107;
 import 'package:fitness_trakcer/features/goals/data/datasources/achievement_local_data_source.dart'
     as _i98;
 import 'package:fitness_trakcer/features/goals/data/datasources/goal_local_data_source.dart'
@@ -94,7 +112,7 @@ import 'package:fitness_trakcer/features/goals/domain/usecases/watch_goals.dart'
 import 'package:fitness_trakcer/features/goals/presentation/cubit/achievements_cubit.dart'
     as _i452;
 import 'package:fitness_trakcer/features/goals/presentation/cubit/goals_cubit.dart'
-    as _i151;
+    as _i152;
 import 'package:fitness_trakcer/features/gps_tracking/data/datasources/tracked_activity_local_data_source.dart'
     as _i4;
 import 'package:fitness_trakcer/features/gps_tracking/data/repositories/tracked_activity_repository_impl.dart'
@@ -121,6 +139,16 @@ import 'package:fitness_trakcer/features/gps_tracking/presentation/cubit/tracked
     as _i548;
 import 'package:fitness_trakcer/features/gps_tracking/presentation/cubit/tracking_cubit.dart'
     as _i886;
+import 'package:fitness_trakcer/features/health_sync/data/datasources/recovery_history_local_data_source.dart'
+    as _i327;
+import 'package:fitness_trakcer/features/health_sync/data/repositories/health_sync_repository_impl.dart'
+    as _i170;
+import 'package:fitness_trakcer/features/health_sync/domain/repositories/health_sync_repository.dart'
+    as _i920;
+import 'package:fitness_trakcer/features/health_sync/domain/usecases/sync_health_data.dart'
+    as _i752;
+import 'package:fitness_trakcer/features/health_sync/presentation/cubit/health_sync_cubit.dart'
+    as _i1054;
 import 'package:fitness_trakcer/features/profile/data/datasources/profile_local_data_source.dart'
     as _i953;
 import 'package:fitness_trakcer/features/profile/data/repositories/profile_repository_impl.dart'
@@ -136,13 +164,41 @@ import 'package:fitness_trakcer/features/profile/domain/usecases/watch_user_prof
 import 'package:fitness_trakcer/features/profile/presentation/cubit/onboarding_cubit.dart'
     as _i852;
 import 'package:fitness_trakcer/features/profile/presentation/cubit/profile_cubit.dart'
-    as _i945;
+    as _i946;
+import 'package:fitness_trakcer/features/programs/data/repositories/program_repository_impl.dart'
+    as _i157;
+import 'package:fitness_trakcer/features/programs/domain/repositories/program_repository.dart'
+    as _i77;
+import 'package:fitness_trakcer/features/programs/domain/usecases/program_use_cases.dart'
+    as _i981;
+import 'package:fitness_trakcer/features/programs/presentation/cubit/programs_cubit.dart'
+    as _i614;
+import 'package:fitness_trakcer/features/progress_photos/data/datasources/check_in_local_data_source.dart'
+    as _i1053;
+import 'package:fitness_trakcer/features/progress_photos/data/repositories/check_in_repository_impl.dart'
+    as _i1048;
+import 'package:fitness_trakcer/features/progress_photos/data/services/image_picker_photo_picker.dart'
+    as _i489;
+import 'package:fitness_trakcer/features/progress_photos/data/services/photo_file_store.dart'
+    as _i312;
+import 'package:fitness_trakcer/features/progress_photos/domain/repositories/check_in_repository.dart'
+    as _i375;
+import 'package:fitness_trakcer/features/progress_photos/domain/services/photo_picker.dart'
+    as _i85;
+import 'package:fitness_trakcer/features/progress_photos/domain/usecases/check_in_use_cases.dart'
+    as _i815;
+import 'package:fitness_trakcer/features/progress_photos/presentation/cubit/check_ins_cubit.dart'
+    as _i151;
 import 'package:fitness_trakcer/features/recovery/data/repositories/recovery_repository_impl.dart'
     as _i729;
 import 'package:fitness_trakcer/features/recovery/domain/repositories/recovery_repository.dart'
     as _i683;
+import 'package:fitness_trakcer/features/recovery/domain/usecases/get_recovery_details.dart'
+    as _i261;
 import 'package:fitness_trakcer/features/recovery/domain/usecases/get_recovery_snapshot.dart'
     as _i551;
+import 'package:fitness_trakcer/features/recovery/presentation/cubit/recovery_details_cubit.dart'
+    as _i1039;
 import 'package:fitness_trakcer/features/reminders/data/datasources/reminder_local_data_source.dart'
     as _i30;
 import 'package:fitness_trakcer/features/reminders/data/repositories/reminder_repository_impl.dart'
@@ -189,6 +245,14 @@ import 'package:fitness_trakcer/features/routines/presentation/cubit/routine_edi
     as _i850;
 import 'package:fitness_trakcer/features/routines/presentation/cubit/routines_cubit.dart'
     as _i18;
+import 'package:fitness_trakcer/features/sleep/data/repositories/sleep_repository_impl.dart'
+    as _i939;
+import 'package:fitness_trakcer/features/sleep/domain/repositories/sleep_repository.dart'
+    as _i945;
+import 'package:fitness_trakcer/features/sleep/domain/usecases/get_sleep_nights.dart'
+    as _i1012;
+import 'package:fitness_trakcer/features/sleep/presentation/cubit/sleep_cubit.dart'
+    as _i555;
 import 'package:fitness_trakcer/features/wellness/data/datasources/wellness_local_data_source.dart'
     as _i695;
 import 'package:fitness_trakcer/features/workout/data/datasources/exercise_local_data_source.dart'
@@ -208,7 +272,7 @@ import 'package:fitness_trakcer/features/workout/domain/repositories/exercise_re
 import 'package:fitness_trakcer/features/workout/domain/repositories/workout_repository.dart'
     as _i956;
 import 'package:fitness_trakcer/features/workout/domain/usecases/create_custom_exercise.dart'
-    as _i981;
+    as _i982;
 import 'package:fitness_trakcer/features/workout/domain/usecases/delete_custom_exercise.dart'
     as _i48;
 import 'package:fitness_trakcer/features/workout/domain/usecases/delete_workout.dart'
@@ -277,7 +341,17 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i369.Clock>(() => const _i369.Clock());
     gh.lazySingleton<_i586.IdGenerator>(() => const _i586.IdGenerator());
+    gh.lazySingleton<_i312.PhotoFileStore>(() => _i312.PhotoFileStore());
     gh.lazySingleton<_i1050.RestTimerCubit>(() => _i1050.RestTimerCubit());
+    gh.lazySingleton<_i284.DataManagementRepository>(
+      () => _i347.DataManagementRepositoryImpl(
+        gh<_i160.AppDatabase>(),
+        gh<_i312.PhotoFileStore>(),
+        gh<_i509.ReminderScheduler>(),
+        gh<_i369.Clock>(),
+      ),
+    );
+    gh.lazySingleton<_i85.PhotoPicker>(() => _i489.ImagePickerPhotoPicker());
     gh.lazySingleton<_i980.GetLocationPermission>(
       () => _i980.GetLocationPermission(gh<_i922.LocationTracker>()),
     );
@@ -290,8 +364,23 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i683.RecoveryRepository>(
       () => _i729.RecoveryRepositoryImpl(gh<_i984.HealthDataSource>()),
     );
+    gh.lazySingleton<_i778.ExportAllData>(
+      () => _i778.ExportAllData(gh<_i284.DataManagementRepository>()),
+    );
+    gh.lazySingleton<_i778.DeleteAllData>(
+      () => _i778.DeleteAllData(gh<_i284.DataManagementRepository>()),
+    );
+    gh.lazySingleton<_i778.RestoreAllData>(
+      () => _i778.RestoreAllData(gh<_i284.DataManagementRepository>()),
+    );
     gh.lazySingleton<_i389.RequestReminderPermission>(
       () => _i389.RequestReminderPermission(gh<_i509.ReminderScheduler>()),
+    );
+    gh.lazySingleton<_i454.OpenFoodFactsDataSource>(
+      () => _i454.OpenFoodFactsDataSource(gh<_i519.Client>()),
+    );
+    gh.lazySingleton<_i228.UsdaDataSource>(
+      () => _i228.UsdaDataSource(gh<_i519.Client>()),
     );
     gh.lazySingleton<_i146.WgerRemoteDataSource>(
       () => _i146.WgerRemoteDataSource(gh<_i519.Client>()),
@@ -308,6 +397,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i302.BodyMetricsLocalDataSource>(
       () => _i302.BodyMetricsLocalDataSource(gh<_i160.AppDatabase>()),
     );
+    gh.lazySingleton<_i958.SavedFoodLocalDataSource>(
+      () => _i958.SavedFoodLocalDataSource(gh<_i160.AppDatabase>()),
+    );
     gh.lazySingleton<_i98.AchievementLocalDataSource>(
       () => _i98.AchievementLocalDataSource(gh<_i160.AppDatabase>()),
     );
@@ -317,8 +409,14 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i4.TrackedActivityLocalDataSource>(
       () => _i4.TrackedActivityLocalDataSource(gh<_i160.AppDatabase>()),
     );
+    gh.lazySingleton<_i327.RecoveryHistoryLocalDataSource>(
+      () => _i327.RecoveryHistoryLocalDataSource(gh<_i160.AppDatabase>()),
+    );
     gh.lazySingleton<_i953.ProfileLocalDataSource>(
       () => _i953.ProfileLocalDataSource(gh<_i160.AppDatabase>()),
+    );
+    gh.lazySingleton<_i1053.CheckInLocalDataSource>(
+      () => _i1053.CheckInLocalDataSource(gh<_i160.AppDatabase>()),
     );
     gh.lazySingleton<_i30.ReminderLocalDataSource>(
       () => _i30.ReminderLocalDataSource(gh<_i160.AppDatabase>()),
@@ -347,15 +445,22 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i979.ReminderRepository>(
       () => _i53.ReminderRepositoryImpl(gh<_i30.ReminderLocalDataSource>()),
     );
+    gh.lazySingleton<_i945.SleepRepository>(
+      () => _i939.SleepRepositoryImpl(
+        gh<_i984.HealthDataSource>(),
+        gh<_i327.RecoveryHistoryLocalDataSource>(),
+      ),
+    );
+    gh.lazySingleton<_i375.CheckInRepository>(
+      () => _i1048.CheckInRepositoryImpl(
+        gh<_i1053.CheckInLocalDataSource>(),
+        gh<_i312.PhotoFileStore>(),
+      ),
+    );
     gh.lazySingleton<_i370.EditWorkout>(
       () => _i370.EditWorkout(
         gh<_i956.WorkoutRepository>(),
         gh<_i586.IdGenerator>(),
-      ),
-    );
-    gh.lazySingleton<_i328.BodyMetricsRepository>(
-      () => _i371.BodyMetricsRepositoryImpl(
-        gh<_i302.BodyMetricsLocalDataSource>(),
       ),
     );
     gh.lazySingleton<_i17.StartWorkout>(
@@ -363,6 +468,12 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i956.WorkoutRepository>(),
         gh<_i586.IdGenerator>(),
         gh<_i369.Clock>(),
+      ),
+    );
+    gh.lazySingleton<_i328.BodyMetricsRepository>(
+      () => _i371.BodyMetricsRepositoryImpl(
+        gh<_i302.BodyMetricsLocalDataSource>(),
+        gh<_i984.HealthDataSource>(),
       ),
     );
     gh.lazySingleton<_i303.DeleteReminder>(
@@ -403,14 +514,20 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i807.UpdateBodyMeasurement>(
       () => _i807.UpdateBodyMeasurement(gh<_i328.BodyMetricsRepository>()),
     );
-    gh.lazySingleton<_i284.WatchBodyMeasurements>(
-      () => _i284.WatchBodyMeasurements(gh<_i328.BodyMetricsRepository>()),
+    gh.lazySingleton<_i285.WatchBodyMeasurements>(
+      () => _i285.WatchBodyMeasurements(gh<_i328.BodyMetricsRepository>()),
     );
     gh.lazySingleton<_i1037.GetUserProfile>(
       () => _i1037.GetUserProfile(gh<_i910.ProfileRepository>()),
     );
     gh.lazySingleton<_i698.WatchUserProfile>(
       () => _i698.WatchUserProfile(gh<_i910.ProfileRepository>()),
+    );
+    gh.lazySingleton<_i815.SetCheckInPhoto>(
+      () => _i815.SetCheckInPhoto(
+        gh<_i375.CheckInRepository>(),
+        gh<_i85.PhotoPicker>(),
+      ),
     );
     gh.lazySingleton<_i391.DeleteGoal>(
       () => _i391.DeleteGoal(gh<_i492.GoalRepository>()),
@@ -421,6 +538,20 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i1031.WatchGoals>(
       () => _i1031.WatchGoals(gh<_i492.GoalRepository>()),
     );
+    gh.lazySingleton<_i659.FoodCatalogRepository>(
+      () => _i923.FoodCatalogRepositoryImpl(
+        gh<_i958.SavedFoodLocalDataSource>(),
+        gh<_i454.OpenFoodFactsDataSource>(),
+        gh<_i228.UsdaDataSource>(),
+        gh<_i369.Clock>(),
+      ),
+    );
+    gh.lazySingleton<_i1059.TrackedActivityRepository>(
+      () => _i164.TrackedActivityRepositoryImpl(
+        gh<_i4.TrackedActivityLocalDataSource>(),
+        gh<_i984.HealthDataSource>(),
+      ),
+    );
     gh.lazySingleton<_i696.SyncRemoteExercises>(
       () => _i696.SyncRemoteExercises(
         gh<_i7.ExerciseRepository>(),
@@ -429,6 +560,22 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i866.RoutineRepository>(
       () => _i796.RoutineRepositoryImpl(gh<_i1029.RoutineLocalDataSource>()),
+    );
+    gh.lazySingleton<_i981.StartPlannedWorkout>(
+      () => _i981.StartPlannedWorkout(
+        gh<_i7.ExerciseRepository>(),
+        gh<_i956.WorkoutRepository>(),
+        gh<_i586.IdGenerator>(),
+        gh<_i369.Clock>(),
+      ),
+    );
+    gh.lazySingleton<_i261.GetRecoveryDetails>(
+      () => _i261.GetRecoveryDetails(
+        gh<_i956.WorkoutRepository>(),
+        gh<_i683.RecoveryRepository>(),
+        gh<_i910.ProfileRepository>(),
+        gh<_i369.Clock>(),
+      ),
     );
     gh.lazySingleton<_i372.DeleteWorkout>(
       () => _i372.DeleteWorkout(gh<_i956.WorkoutRepository>()),
@@ -473,6 +620,9 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i369.Clock>(),
       ),
     );
+    gh.lazySingleton<_i77.ProgramRepository>(
+      () => _i157.ProgramRepositoryImpl(gh<_i695.WellnessLocalDataSource>()),
+    );
     gh.lazySingleton<_i542.DeleteRoutine>(
       () => _i542.DeleteRoutine(gh<_i866.RoutineRepository>()),
     );
@@ -485,9 +635,26 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i726.WatchRoutines>(
       () => _i726.WatchRoutines(gh<_i866.RoutineRepository>()),
     );
-    gh.lazySingleton<_i1059.TrackedActivityRepository>(
-      () => _i164.TrackedActivityRepositoryImpl(
-        gh<_i4.TrackedActivityLocalDataSource>(),
+    gh.factory<_i1039.RecoveryDetailsCubit>(
+      () => _i1039.RecoveryDetailsCubit(gh<_i261.GetRecoveryDetails>()),
+    );
+    gh.lazySingleton<_i815.WatchCheckIns>(
+      () => _i815.WatchCheckIns(gh<_i375.CheckInRepository>()),
+    );
+    gh.lazySingleton<_i815.RemoveCheckInPhoto>(
+      () => _i815.RemoveCheckInPhoto(gh<_i375.CheckInRepository>()),
+    );
+    gh.lazySingleton<_i815.DeleteCheckIn>(
+      () => _i815.DeleteCheckIn(gh<_i375.CheckInRepository>()),
+    );
+    gh.lazySingleton<_i1012.GetSleepNights>(
+      () =>
+          _i1012.GetSleepNights(gh<_i945.SleepRepository>(), gh<_i369.Clock>()),
+    );
+    gh.factory<_i555.SleepCubit>(
+      () => _i555.SleepCubit(
+        gh<_i1012.GetSleepNights>(),
+        gh<_i945.SleepRepository>(),
       ),
     );
     gh.factory<_i86.WorkoutHistoryCubit>(
@@ -495,6 +662,9 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i896.WatchWorkoutHistory>(),
         gh<_i372.DeleteWorkout>(),
       ),
+    );
+    gh.lazySingleton<_i981.LeaveProgram>(
+      () => _i981.LeaveProgram(gh<_i77.ProgramRepository>()),
     );
     gh.factory<_i823.RemindersCubit>(
       () => _i823.RemindersCubit(
@@ -517,6 +687,14 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i910.ProfileRepository>(),
       ),
     );
+    gh.lazySingleton<_i815.CreateCheckIn>(
+      () => _i815.CreateCheckIn(
+        gh<_i375.CheckInRepository>(),
+        gh<_i328.BodyMetricsRepository>(),
+        gh<_i586.IdGenerator>(),
+        gh<_i369.Clock>(),
+      ),
+    );
     gh.lazySingleton<_i254.SaveRoutine>(
       () => _i254.SaveRoutine(
         gh<_i866.RoutineRepository>(),
@@ -531,6 +709,12 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i369.Clock>(),
       ),
     );
+    gh.lazySingleton<_i981.EnrollInProgram>(
+      () => _i981.EnrollInProgram(
+        gh<_i77.ProgramRepository>(),
+        gh<_i369.Clock>(),
+      ),
+    );
     gh.lazySingleton<_i48.DeleteCustomExercise>(
       () => _i48.DeleteCustomExercise(gh<_i7.ExerciseRepository>()),
     );
@@ -540,9 +724,22 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i225.WatchExercises>(
       () => _i225.WatchExercises(gh<_i7.ExerciseRepository>()),
     );
+    gh.lazySingleton<_i981.GetProgramProgress>(
+      () => _i981.GetProgramProgress(
+        gh<_i77.ProgramRepository>(),
+        gh<_i956.WorkoutRepository>(),
+        gh<_i369.Clock>(),
+      ),
+    );
+    gh.factory<_i107.FoodCatalogCubit>(
+      () => _i107.FoodCatalogCubit(
+        gh<_i659.FoodCatalogRepository>(),
+        gh<_i586.IdGenerator>(),
+      ),
+    );
     gh.factory<_i849.BodyMetricsCubit>(
       () => _i849.BodyMetricsCubit(
-        gh<_i284.WatchBodyMeasurements>(),
+        gh<_i285.WatchBodyMeasurements>(),
         gh<_i936.GetBodyProgress>(),
         gh<_i1056.LogBodyMeasurement>(),
         gh<_i807.UpdateBodyMeasurement>(),
@@ -585,8 +782,8 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i369.Clock>(),
       ),
     );
-    gh.lazySingleton<_i981.CreateCustomExercise>(
-      () => _i981.CreateCustomExercise(
+    gh.lazySingleton<_i982.CreateCustomExercise>(
+      () => _i982.CreateCustomExercise(
         gh<_i7.ExerciseRepository>(),
         gh<_i586.IdGenerator>(),
       ),
@@ -616,8 +813,8 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i56.WorkoutDetailCubit>(
       () => _i56.WorkoutDetailCubit(gh<_i337.GetWorkout>()),
     );
-    gh.lazySingleton<_i945.ProfileCubit>(
-      () => _i945.ProfileCubit(
+    gh.lazySingleton<_i946.ProfileCubit>(
+      () => _i946.ProfileCubit(
         gh<_i698.WatchUserProfile>(),
         gh<_i414.SaveUserProfile>(),
       ),
@@ -625,7 +822,7 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i877.ExerciseLibraryCubit>(
       () => _i877.ExerciseLibraryCubit(
         gh<_i225.WatchExercises>(),
-        gh<_i981.CreateCustomExercise>(),
+        gh<_i982.CreateCustomExercise>(),
         gh<_i48.DeleteCustomExercise>(),
         gh<_i696.SyncRemoteExercises>(),
         gh<_i733.GetExerciseSyncStatus>(),
@@ -653,6 +850,17 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i956.WorkoutRepository>(),
         gh<_i1059.TrackedActivityRepository>(),
         gh<_i310.GetLatestWeight>(),
+        gh<_i369.Clock>(),
+      ),
+    );
+    gh.lazySingleton<_i920.HealthSyncRepository>(
+      () => _i170.HealthSyncRepositoryImpl(
+        gh<_i507.ActivityRepository>(),
+        gh<_i328.BodyMetricsRepository>(),
+        gh<_i1059.TrackedActivityRepository>(),
+        gh<_i327.RecoveryHistoryLocalDataSource>(),
+        gh<_i984.HealthDataSource>(),
+        gh<_i695.WellnessLocalDataSource>(),
         gh<_i369.Clock>(),
       ),
     );
@@ -684,13 +892,42 @@ extension GetItInjectableX on _i174.GetIt {
       ),
     );
     gh.lazySingleton<_i951.AppRouter>(
-      () => _i951.AppRouter(gh<_i945.ProfileCubit>()),
+      () => _i951.AppRouter(gh<_i946.ProfileCubit>()),
+    );
+    gh.lazySingleton<_i151.CheckInsCubit>(
+      () => _i151.CheckInsCubit(
+        gh<_i815.WatchCheckIns>(),
+        gh<_i815.CreateCheckIn>(),
+        gh<_i815.SetCheckInPhoto>(),
+        gh<_i815.RemoveCheckInPhoto>(),
+        gh<_i815.DeleteCheckIn>(),
+      ),
+    );
+    gh.factory<_i614.ProgramsCubit>(
+      () => _i614.ProgramsCubit(
+        gh<_i981.GetProgramProgress>(),
+        gh<_i981.EnrollInProgram>(),
+        gh<_i981.LeaveProgram>(),
+        gh<_i981.StartPlannedWorkout>(),
+      ),
     );
     gh.lazySingleton<_i148.SaveTrackedActivity>(
       () => _i148.SaveTrackedActivity(
         gh<_i1059.TrackedActivityRepository>(),
         gh<_i310.GetLatestWeight>(),
         gh<_i586.IdGenerator>(),
+        gh<_i369.Clock>(),
+      ),
+    );
+    gh.lazySingleton<_i752.SyncHealthData>(
+      () => _i752.SyncHealthData(gh<_i920.HealthSyncRepository>()),
+    );
+    gh.lazySingleton<_i1054.HealthSyncCubit>(
+      () => _i1054.HealthSyncCubit(
+        gh<_i493.GetHealthAccessStatus>(),
+        gh<_i233.RequestHealthAccess>(),
+        gh<_i752.SyncHealthData>(),
+        gh<_i920.HealthSyncRepository>(),
         gh<_i369.Clock>(),
       ),
     );
@@ -717,8 +954,8 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i404.DeleteTrackedActivity>(),
       ),
     );
-    gh.factory<_i151.GoalsCubit>(
-      () => _i151.GoalsCubit(
+    gh.factory<_i152.GoalsCubit>(
+      () => _i152.GoalsCubit(
         gh<_i1031.WatchGoals>(),
         gh<_i139.GetGoalProgress>(),
         gh<_i968.CreateGoal>(),

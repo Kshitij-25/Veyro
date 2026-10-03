@@ -45,11 +45,6 @@ class AppShell extends StatelessWidget {
       icon: Icons.show_chart_outlined,
       selectedIcon: Icons.show_chart,
     ),
-    NavigationDestinationData(
-      label: 'Community',
-      icon: Icons.groups_outlined,
-      selectedIcon: Icons.groups,
-    ),
   ];
 
   @override
@@ -60,7 +55,7 @@ class AppShell extends StatelessWidget {
       onDestinationSelected: (index) {
         // The home summary aggregates every feature; refresh it on return.
         WellnessStore.instance.reloadIfNewDay();
-        if (index == 0) context.read<DashboardCubit>().load();
+        if (index == 0 || index == 3) context.read<DashboardCubit>().load();
         navigationShell.goBranch(
           index,
           initialLocation: index == navigationShell.currentIndex,

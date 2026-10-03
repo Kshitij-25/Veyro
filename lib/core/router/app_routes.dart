@@ -8,7 +8,6 @@ abstract final class AppRoutes {
   static const reminders = '$settings/reminders';
   static const preferences = '$settings/preferences';
   static const devices = '$settings/devices';
-  static const pro = '$settings/pro';
 
   static const workouts = '/workouts';
   static const activeWorkout = '$workouts/active';
@@ -33,7 +32,6 @@ abstract final class AppRoutes {
   static const fuel = '/fuel';
   static const foodSearch = '$fuel/log';
   static const scan = '$fuel/scan';
-  static const recipes = '$fuel/recipes';
   static const fasting = '$fuel/fasting';
   static const nutritionTargets = '$fuel/targets';
 
@@ -46,6 +44,4 @@ abstract final class AppRoutes {
   static const photos = '$progress/photos';
   static const report = '$progress/report';
   static const habits = '$progress/habits';
-
-  static const community = '/community';
 }

@@ -56,7 +56,7 @@ class TrackedActivitiesPage extends StatelessWidget {
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                '${units.distanceUnit} · ${activity.type.label}',
+                                '${units.distanceUnit} · ${activity.displayName}',
                                 style: VeyroText.body(12, color: v.mute),
                               ),
                             ],

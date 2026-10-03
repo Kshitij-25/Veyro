@@ -9,6 +9,7 @@ abstract class TrackedActivity with _$TrackedActivity {
   const factory TrackedActivity({
     required String id,
     required TrackedActivityType type,
+    String? title,
     required DateTime startedAt,
     required DateTime endedAt,
     required Duration movingDuration,
@@ -19,6 +20,9 @@ abstract class TrackedActivity with _$TrackedActivity {
   }) = _TrackedActivity;
 
   const TrackedActivity._();
+
+  /// What to call it: the imported name, or the activity type.
+  String get displayName => title ?? type.label;
 
   double get averageSpeedKmh => movingDuration.inSeconds == 0
       ? 0

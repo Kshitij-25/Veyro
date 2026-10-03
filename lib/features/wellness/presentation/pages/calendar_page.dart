@@ -1,14 +1,34 @@
+import 'dart:async';
+
+import 'package:fitness_trakcer/core/di/injection.dart';
 import 'package:fitness_trakcer/core/theme/veyro_colors.dart';
 import 'package:fitness_trakcer/core/theme/veyro_text.dart';
+import 'package:fitness_trakcer/core/usecase/use_case.dart';
 import 'package:fitness_trakcer/core/widgets/veyro_widgets.dart';
+import 'package:fitness_trakcer/features/gps_tracking/domain/entities/tracked_activity.dart';
+import 'package:fitness_trakcer/features/gps_tracking/domain/entities/tracked_activity_type.dart';
+import 'package:fitness_trakcer/features/gps_tracking/domain/usecases/watch_tracked_activities.dart';
 import 'package:fitness_trakcer/features/profile/presentation/unit_system_context.dart';
 import 'package:fitness_trakcer/features/wellness/presentation/wellness_format.dart';
+import 'package:fitness_trakcer/features/workout/domain/entities/workout.dart';
+import 'package:fitness_trakcer/features/workout/domain/usecases/watch_workout_history.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 const _blue = Color(0xFF2F6FE5);
 
-/// Training calendar with sample activity marks.
+enum _Kind { strength, run, cycle, walk, other }
+
+class _Entry {
+  const _Entry(this.kind, this.title, this.detail);
+
+  final _Kind kind;
+  final String title;
+  final String detail;
+}
+
+/// Training calendar built from logged workouts and recorded or imported
+/// activities.
 class CalendarPage extends StatefulWidget {
   const CalendarPage({super.key});
 
@@ -17,34 +37,76 @@ class CalendarPage extends StatefulWidget {
 }
 
 class _CalendarPageState extends State<CalendarPage> {
-  static const _prev = {
-    1: 'S',
-    3: 'S',
-    5: 'R',
-    8: 'S',
-    10: 'S',
-    12: 'C',
-    15: 'S',
-    17: 'S',
-    19: 'R',
-    22: 'S',
-    24: 'S',
-    26: 'S',
-    27: 'W',
-    29: 'S',
-  };
-  static const _cur = {1: 'S', 2: 'W'};
-  static const _planned = {1: 'Push Day', 3: 'Legs', 5: 'Pull Day'};
-
   final DateTime _today = DateTime.now();
-  bool _previous = false;
-  late int _selected = _today.day;
+  late DateTime _month = DateTime(_today.year, _today.month);
+  late DateTime _selected = DateTime(_today.year, _today.month, _today.day);
 
-  DateTime get _month => _previous
-      ? DateTime(_today.year, _today.month - 1)
-      : DateTime(_today.year, _today.month);
+  List<Workout> _workouts = const [];
+  List<TrackedActivity> _activities = const [];
+  final _subs = <StreamSubscription<Object?>>[];
 
-  Map<int, String> get _marks => _previous ? _prev : _cur;
+  @override
+  void initState() {
+    super.initState();
+    _subs
+      ..add(
+        getIt<WatchWorkoutHistory>()(const NoParams()).listen((w) {
+          if (mounted) setState(() => _workouts = w);
+        }),
+      )
+      ..add(
+        getIt<WatchTrackedActivities>()(const NoParams()).listen((a) {
+          if (mounted) setState(() => _activities = a);
+        }),
+      );
+  }
+
+  @override
+  void dispose() {
+    for (final s in _subs) {
+      s.cancel();
+    }
+    super.dispose();
+  }
+
+  static int _key(DateTime d) => d.year * 10000 + d.month * 100 + d.day;
+
+  Map<int, List<_Entry>> _entries(String Function(double) dist) {
+    final out = <int, List<_Entry>>{};
+    void add(DateTime at, _Entry e) => (out[_key(at.toLocal())] ??= []).add(e);
+    for (final w in _workouts) {
+      final mins = w.durationAt(DateTime.now()).inMinutes;
+      final sets = w.completedSetCount;
+      add(
+        w.startedAt,
+        _Entry(
+          _Kind.strength,
+          w.name,
+          ['${mins}m', if (sets > 0) '$sets sets'].join(' · '),
+        ),
+      );
+    }
+    for (final a in _activities) {
+      final kind = switch (a.type) {
+        TrackedActivityType.run => _Kind.run,
+        TrackedActivityType.cycle => _Kind.cycle,
+        TrackedActivityType.walk => _Kind.walk,
+        TrackedActivityType.other => _Kind.other,
+      };
+      add(
+        a.startedAt,
+        _Entry(
+          kind,
+          a.displayName,
+          [
+            if (a.distanceMeters > 0) dist(a.distanceMeters / 1000),
+            '${a.movingDuration.inMinutes}m',
+          ].join(' · '),
+        ),
+      );
+    }
+    return out;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,34 +115,32 @@ class _CalendarPageState extends State<CalendarPage> {
     final month = _month;
     final lead = DateTime(month.year, month.month, 1).weekday % 7;
     final days = DateTime(month.year, month.month + 1, 0).day;
-    final marks = _marks;
-    Color fill(String m) => switch (m) {
-      'S' => v.acc,
-      'R' => v.ink,
-      'C' => _blue,
-      _ => VeyroColors.success,
+    final all = _entries((km) => '${units.fd(km)} ${units.distanceUnit}');
+    Color fill(_Kind k) => switch (k) {
+      _Kind.strength => v.acc,
+      _Kind.run => v.ink,
+      _Kind.cycle => _blue,
+      _Kind.walk => VeyroColors.success,
+      _Kind.other => v.mute,
     };
-    Color on(String m) => switch (m) {
-      'S' => VeyroColors.onAccent,
-      'R' => v.bg,
+    Color on(_Kind k) => switch (k) {
+      _Kind.strength => VeyroColors.onAccent,
+      _Kind.run => v.bg,
       _ => Colors.white,
     };
-    final sel = DateTime(month.year, month.month, _selected.clamp(1, days));
-    final isFuture = !_previous && sel.isAfter(_today);
-    final planned = isFuture ? _planned[sel.weekday % 7] : null;
-    final mark = marks[sel.day];
-    final title = switch (mark) {
-      'S' => 'Strength workout',
-      'R' => 'Run · ${units.fd(8.05)} ${units.distanceUnit}',
-      'C' => 'Cycle · ${units.fd(24.1)} ${units.distanceUnit}',
-      'W' => 'Walk · ${units.fd(3.2)} ${units.distanceUnit}',
-      _ => planned != null ? 'Planned: $planned' : 'Rest day',
-    };
-    final sub = mark != null
-        ? 'Completed'
-        : planned != null
-        ? 'From your routines'
-        : 'Nothing logged';
+    _Kind? main(List<_Entry>? list) => list == null
+        ? null
+        : (list.map((e) => e.kind).toList()
+                ..sort((a, b) => a.index.compareTo(b.index)))
+              .first;
+    final activeDays = [
+      for (var d = 1; d <= days; d++)
+        if (all.containsKey(_key(DateTime(month.year, month.month, d)))) d,
+    ].length;
+    final sel = _selected;
+    final selEntries = all[_key(sel)] ?? const <_Entry>[];
+    final thisMonth = month.year == _today.year && month.month == _today.month;
+    final todayKey = _key(DateTime(_today.year, _today.month, _today.day));
     return VSubPage(
       title: 'Calendar',
       maxWidth: 720,
@@ -95,8 +155,8 @@ class _CalendarPageState extends State<CalendarPage> {
                   _Nav(
                     icon: Icons.chevron_left,
                     onTap: () => setState(() {
-                      _previous = true;
-                      _selected = 1;
+                      _month = DateTime(month.year, month.month - 1);
+                      _selected = _month;
                     }),
                   ),
                   Column(
@@ -106,17 +166,28 @@ class _CalendarPageState extends State<CalendarPage> {
                         style: VeyroText.display(26),
                       ),
                       Text(
-                        '${marks.length} active days',
+                        '$activeDays active ${activeDays == 1 ? 'day' : 'days'}',
                         style: VeyroText.body(12, color: v.mute),
                       ),
                     ],
                   ),
-                  _Nav(
-                    icon: Icons.chevron_right,
-                    onTap: () => setState(() {
-                      _previous = false;
-                      _selected = _today.day;
-                    }),
+                  Opacity(
+                    opacity: thisMonth ? 0.3 : 1,
+                    child: _Nav(
+                      icon: Icons.chevron_right,
+                      onTap: () {
+                        if (thisMonth) return;
+                        setState(() {
+                          _month = DateTime(month.year, month.month + 1);
+                          final isNow =
+                              _month.year == _today.year &&
+                              _month.month == _today.month;
+                          _selected = isNow
+                              ? DateTime(_today.year, _today.month, _today.day)
+                              : _month;
+                        });
+                      },
+                    ),
                   ),
                 ],
               ),
@@ -150,27 +221,21 @@ class _CalendarPageState extends State<CalendarPage> {
                   for (var d = 1; d <= days; d++)
                     Builder(
                       builder: (context) {
-                        final m = marks[d];
                         final date = DateTime(month.year, month.month, d);
-                        final isToday = !_previous && d == _today.day;
-                        final plan =
-                            !_previous &&
-                            date.isAfter(_today) &&
-                            _planned.containsKey(date.weekday % 7);
+                        final k = main(all[_key(date)]);
+                        final isToday = _key(date) == todayKey;
                         return GestureDetector(
-                          onTap: () => setState(() => _selected = d),
+                          onTap: () => setState(() => _selected = date),
                           child: Container(
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: m != null ? fill(m) : Colors.transparent,
+                              color: k != null ? fill(k) : Colors.transparent,
                               border: Border.all(
-                                color: d == _selected
+                                color: _key(date) == _key(sel)
                                     ? v.acc
                                     : isToday
                                     ? v.ink
-                                    : plan
-                                    ? v.mute
                                     : Colors.transparent,
                                 width: 2,
                               ),
@@ -180,7 +245,7 @@ class _CalendarPageState extends State<CalendarPage> {
                               style: VeyroText.body(
                                 13,
                                 weight: FontWeight.w700,
-                                color: m != null ? on(m) : v.ink,
+                                color: k != null ? on(k) : v.ink,
                               ),
                             ),
                           ),
@@ -199,7 +264,7 @@ class _CalendarPageState extends State<CalendarPage> {
                     ('● Run', v.ink),
                     ('● Cycle', _blue),
                     ('● Walk', VeyroColors.success),
-                    ('○ Planned', v.mute),
+                    ('● Other', v.mute),
                   ])
                     Text(l.$1, style: VeyroText.body(11.5, color: l.$2)),
                 ],
@@ -212,11 +277,30 @@ class _CalendarPageState extends State<CalendarPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               VLabel(DateFormat('MMM d').format(sel)),
-              Text(
-                title.toUpperCase(),
-                style: VeyroText.display(26, height: 1.1),
-              ),
-              Text(sub, style: VeyroText.body(13, color: v.mute)),
+              if (selEntries.isEmpty) ...[
+                Text(
+                  (sel.isAfter(_today) ? 'Nothing yet' : 'Rest day')
+                      .toUpperCase(),
+                  style: VeyroText.display(26, height: 1.1),
+                ),
+                Text(
+                  sel.isAfter(_today) ? 'Upcoming' : 'Nothing logged',
+                  style: VeyroText.body(13, color: v.mute),
+                ),
+              ] else
+                for (final e in selEntries) ...[
+                  Text(
+                    e.title.toUpperCase(),
+                    style: VeyroText.display(26, height: 1.1),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Text(
+                      e.detail,
+                      style: VeyroText.body(13, color: v.mute),
+                    ),
+                  ),
+                ],
             ],
           ),
         ),

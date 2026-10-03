@@ -14,7 +14,9 @@ import 'package:fitness_trakcer/features/body_metrics/domain/entities/body_measu
 import 'package:fitness_trakcer/features/body_metrics/domain/usecases/log_body_measurement.dart';
 import 'package:fitness_trakcer/features/body_metrics/presentation/cubit/body_metrics_cubit.dart';
 import 'package:fitness_trakcer/features/body_metrics/presentation/cubit/body_metrics_state.dart';
+import 'package:fitness_trakcer/features/dashboard/presentation/cubit/dashboard_cubit.dart';
 import 'package:fitness_trakcer/features/profile/presentation/unit_system_context.dart';
+import 'package:fitness_trakcer/features/progress_photos/presentation/cubit/check_ins_cubit.dart';
 import 'package:fitness_trakcer/features/wellness/presentation/wellness_format.dart';
 import 'package:fitness_trakcer/features/wellness/presentation/wellness_store.dart';
 import 'package:fitness_trakcer/features/workout/presentation/cubit/personal_records_cubit.dart';
@@ -84,7 +86,7 @@ class BodyMetricsPage extends StatelessWidget {
                         expand: true,
                         onPressed: () => _showLogDialog(context, units),
                       ),
-                      const _ProgressTiles(),
+                      _ProgressTiles(state: state),
                     ],
                     right: [
                       const _StrengthCard(),
@@ -430,23 +432,60 @@ class _WeightChartPainter extends CustomPainter {
 }
 
 class _ProgressTiles extends StatelessWidget {
-  const _ProgressTiles();
+  const _ProgressTiles({required this.state});
+
+  final BodyMetricsState state;
 
   @override
   Widget build(BuildContext context) {
+    final summary = context.watch<DashboardCubit>().state.summary;
+    final sleep = summary?.recovery?.lastSleepMinutes;
+    final checkIns = context.watch<CheckInsCubit>().state.checkIns;
+    final readiness = summary?.readiness;
+    final report = summary?.weeklyReport;
+    final fat = state.measurements
+        .where((m) => m.bodyFatPercent != null)
+        .map((m) => m.bodyFatPercent!)
+        .firstOrNull;
     return WellnessBuilder(
       builder: (context, store) {
         final tiles = [
-          ('Sleep', '7h 36m', AppRoutes.sleep),
-          ('Recovery', '82 ready', AppRoutes.recovery),
-          ('Body composition', '17.8% fat', AppRoutes.bodyComposition),
-          ('Photos', '${store.checkIns.length} check-ins', AppRoutes.photos),
+          (
+            'Sleep',
+            sleep == null ? '—' : '${sleep ~/ 60}h ${sleep % 60}m',
+            AppRoutes.sleep,
+          ),
+          (
+            'Recovery',
+            readiness == null ? '—' : '${readiness.score} · ${readiness.label}',
+            AppRoutes.recovery,
+          ),
+          (
+            'Body composition',
+            fat == null ? 'Not logged' : '${fat.toStringAsFixed(1)}% fat',
+            AppRoutes.bodyComposition,
+          ),
+          (
+            'Photos',
+            checkIns.isEmpty
+                ? 'None yet'
+                : '${checkIns.length} check-in${checkIns.length == 1 ? '' : 's'}',
+            AppRoutes.photos,
+          ),
           (
             'Habits',
-            '${store.habitsDone} of ${store.habits.length} today',
+            store.habits.isEmpty
+                ? 'None yet'
+                : '${store.habitsDone} of ${store.habits.length} today',
             AppRoutes.habits,
           ),
-          ('Weekly report', 'Latest', AppRoutes.report),
+          (
+            'Weekly report',
+            report == null
+                ? '—'
+                : '${report.workouts} ${report.workouts == 1 ? 'workout' : 'workouts'}',
+            AppRoutes.report,
+          ),
         ];
         return VGrid2(
           children: [

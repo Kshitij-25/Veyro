@@ -1,18 +1,27 @@
+import 'dart:async';
+import 'dart:math' as math;
+
+import 'package:fitness_trakcer/core/di/injection.dart';
 import 'package:fitness_trakcer/core/router/app_routes.dart';
 import 'package:fitness_trakcer/core/theme/veyro_colors.dart';
 import 'package:fitness_trakcer/core/theme/veyro_text.dart';
+import 'package:fitness_trakcer/core/usecase/use_case.dart';
 import 'package:fitness_trakcer/core/widgets/veyro_charts.dart';
 import 'package:fitness_trakcer/core/widgets/veyro_extras.dart';
 import 'package:fitness_trakcer/core/widgets/veyro_widgets.dart';
 import 'package:fitness_trakcer/features/profile/presentation/unit_system_context.dart';
 import 'package:fitness_trakcer/features/wellness/presentation/wellness_format.dart';
 import 'package:fitness_trakcer/features/workout/domain/entities/exercise.dart';
+import 'package:fitness_trakcer/features/workout/domain/entities/exercise_tracking_type.dart';
+import 'package:fitness_trakcer/features/workout/domain/entities/workout.dart';
+import 'package:fitness_trakcer/features/workout/domain/usecases/watch_workout_history.dart';
 import 'package:fitness_trakcer/features/workout/presentation/cubit/active_workout_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
-/// Exercise detail: muscles, how-to and trend (trend values are sample data).
+/// Exercise detail: muscles, description and progress from your history.
 class ExerciseDetailPage extends StatefulWidget {
   const ExerciseDetailPage({required this.exercise, super.key});
 
@@ -22,19 +31,72 @@ class ExerciseDetailPage extends StatefulWidget {
   State<ExerciseDetailPage> createState() => _ExerciseDetailPageState();
 }
 
-class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
-  bool _fav = false;
+/// One finished workout's numbers for the exercise.
+class _Session {
+  const _Session(this.at, this.value, this.volumeKg, this.bestSet);
 
-  static const _secondary = {
-    'Chest': 'Triceps, Shoulders',
-    'Back': 'Biceps, Rear delts',
-    'Shoulders': 'Triceps, Traps',
-    'Quads': 'Glutes, Core',
-    'Hamstrings': 'Glutes, Lower back',
-    'Biceps': 'Forearms',
-    'Triceps': 'Chest, Shoulders',
-    'Core': 'Obliques',
-  };
+  final DateTime at;
+
+  /// Trend value: estimated 1RM, reps, seconds or metres by tracking type.
+  final double value;
+  final double volumeKg;
+  final String bestSet;
+}
+
+class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
+  List<_Session> _sessions = const [];
+  StreamSubscription<List<Workout>>? _sub;
+
+  @override
+  void initState() {
+    super.initState();
+    _sub = getIt<WatchWorkoutHistory>()(const NoParams()).listen((workouts) {
+      if (mounted) setState(() => _sessions = _build(workouts));
+    });
+  }
+
+  @override
+  void dispose() {
+    _sub?.cancel();
+    super.dispose();
+  }
+
+  List<_Session> _build(List<Workout> workouts) {
+    final type = widget.exercise.trackingType;
+    final out = <_Session>[];
+    for (final w in workouts) {
+      final sets = [
+        for (final e in w.exercises)
+          if (e.exercise.id == widget.exercise.id)
+            ...e.sets.where((x) => x.isCompleted && !x.isWarmup),
+      ];
+      if (sets.isEmpty) continue;
+      double value = 0;
+      var best = '';
+      var volume = 0.0;
+      for (final x in sets) {
+        final kg = x.weightKg ?? 0;
+        final reps = x.reps ?? 0;
+        volume += x.volumeKg;
+        final v = switch (type) {
+          ExerciseTrackingType.weightAndReps =>
+            reps <= 1 ? kg : kg * (1 + reps / 30),
+          ExerciseTrackingType.repsOnly => reps.toDouble(),
+          ExerciseTrackingType.duration => (x.durationSeconds ?? 0).toDouble(),
+          ExerciseTrackingType.distanceAndDuration => x.distanceMeters ?? 0,
+        };
+        if (v > value) {
+          value = v;
+          best = '$kg|$reps';
+        }
+      }
+      if (value > 0) {
+        out.add(_Session(w.startedAt, value, volume, best));
+      }
+    }
+    out.sort((a, b) => a.at.compareTo(b.at));
+    return out;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,41 +104,68 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
     final units = context.unitSystem;
     final ex = widget.exercise;
     final muscle = ex.muscleGroup.label;
-    final bodyweight = ex.equipment.label.toLowerCase().contains('body');
-    const base = 80.0;
-    final e1 = base * (1 + 8 / 30);
-    final trend = bodyweight
-        ? <double>[6, 7, 7, 8, 8, 9, 10, 10]
-        : <double>[
-            for (final m in [.8, .83, .85, .88, .9, .93, .97, 1]) e1 * m,
-          ];
-    final best = bodyweight
-        ? const [
-            ('Most reps', '10'),
-            ('Best session', '3 × 8'),
-            ('Last done', '—'),
-          ]
-        : [
-            ('Heaviest set', '${units.fw(base * 1.1)} ${units.weightUnit} × 5'),
-            ('Estimated 1RM', '${units.fw(e1)} ${units.weightUnit}'),
-            (
-              'Best volume',
-              '${thousands(base * 1.05 * units.kgFactor * 24)} ${units.weightUnit}',
-            ),
-          ];
+    final type = ex.trackingType;
+    final s = _sessions;
+    final trend = [for (final x in s) x.value];
+    String fmt(double value) => switch (type) {
+      ExerciseTrackingType.weightAndReps =>
+        '${units.fw(value)} ${units.weightUnit}',
+      ExerciseTrackingType.repsOnly => '${value.round()} reps',
+      ExerciseTrackingType.duration => clockText(value),
+      ExerciseTrackingType.distanceAndDuration =>
+        '${units.fd(value / 1000, 2)} ${units.distanceUnit}',
+    };
+    final topValue = s.isEmpty ? 0.0 : trend.reduce(math.max);
+    final bestVolume = s.isEmpty
+        ? 0.0
+        : s.map((x) => x.volumeKg).reduce(math.max);
+    final heaviest = s.isEmpty
+        ? 0.0
+        : s
+              .map((x) => double.tryParse(x.bestSet.split('|').first) ?? 0)
+              .reduce(math.max);
+    final stats = <(String, String)>[
+      if (s.isNotEmpty) ...[
+        if (type == ExerciseTrackingType.weightAndReps) ...[
+          ('Heaviest set', '${units.fw(heaviest)} ${units.weightUnit}'),
+          ('Estimated 1RM', fmt(topValue)),
+          (
+            'Best volume',
+            '${thousands(bestVolume * units.kgFactor)} ${units.weightUnit}',
+          ),
+        ] else
+          (
+            switch (type) {
+              ExerciseTrackingType.repsOnly => 'Most reps',
+              ExerciseTrackingType.duration => 'Longest set',
+              _ => 'Longest distance',
+            },
+            fmt(topValue),
+          ),
+        ('Sessions', '${s.length}'),
+        ('Last done', DateFormat('MMM d, yyyy').format(s.last.at)),
+      ],
+    ];
+    final trendLabel = switch (type) {
+      ExerciseTrackingType.weightAndReps => 'Estimated 1RM trend',
+      ExerciseTrackingType.repsOnly => 'Best reps per session',
+      ExerciseTrackingType.duration => 'Longest set per session',
+      ExerciseTrackingType.distanceAndDuration => 'Distance per session',
+    };
     return VSubPage(
       title: ex.name,
       maxWidth: 720,
-      action: IconButton.filled(
-        style: IconButton.styleFrom(
-          backgroundColor: v.card,
-          foregroundColor: v.acc,
-        ),
-        onPressed: () => setState(() => _fav = !_fav),
-        icon: Icon(_fav ? Icons.star : Icons.star_border),
-      ),
       children: [
-        const VPlaceholder('exercise demo', height: 210),
+        if (ex.imageUrl != null && ex.imageUrl!.isNotEmpty)
+          ClipRRect(
+            borderRadius: BorderRadius.circular(18),
+            child: Image.network(
+              ex.imageUrl!,
+              height: 210,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) => const SizedBox.shrink(),
+            ),
+          ),
         Text(
           '$muscle · ${ex.equipment.label}',
           style: VeyroText.body(13, color: v.mute),
@@ -85,69 +174,45 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const VLabel('Muscles'),
+              const VLabel('Muscle'),
               const SizedBox(height: 8),
-              Wrap(
-                spacing: 6,
-                runSpacing: 6,
-                children: [
-                  _Pill(muscle, filled: true),
-                  _Pill(_secondary[muscle] ?? 'Stabilisers'),
-                ],
-              ),
+              _Pill(muscle, filled: true),
             ],
           ),
         ),
-        VCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const VLabel('How to'),
-              for (final (i, t) in [
-                'Set up with a stable stance and brace your core.',
-                'Lower under control through the full range of motion.',
-                'Drive back up, keeping the path close to your body.',
-                'Exhale at the top and reset before the next rep.',
-              ].indexed)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: 24,
-                        height: 24,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: v.bg,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Text(
-                          '${i + 1}',
-                          style: VeyroText.body(12, weight: FontWeight.w700),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          t,
-                          style: VeyroText.body(14.5, height: 1.4),
-                        ),
-                      ),
-                    ],
-                  ),
+        if (ex.description != null && ex.description!.trim().isNotEmpty)
+          VCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const VLabel('How to'),
+                const SizedBox(height: 6),
+                Text(
+                  ex.description!
+                      .replaceAll(RegExp('<[^>]*>'), ' ')
+                      .replaceAll(RegExp(r'\s+'), ' ')
+                      .trim(),
+                  style: VeyroText.body(14.5, height: 1.4),
                 ),
-            ],
+              ],
+            ),
           ),
-        ),
         VCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const VLabel('Estimated 1RM trend'),
+              VLabel(trendLabel),
               const SizedBox(height: 8),
-              VLinePlot(values: trend, height: 70),
-              for (final b in best)
+              if (s.length >= 2)
+                VLinePlot(values: trend, height: 70)
+              else
+                Text(
+                  s.isEmpty
+                      ? 'Log this exercise in a workout to see your progress.'
+                      : 'Log it once more to see a trend.',
+                  style: VeyroText.body(13, color: v.mute),
+                ),
+              for (final b in stats)
                 VKeyValueRow(
                   label: b.$1,
                   height: 38,

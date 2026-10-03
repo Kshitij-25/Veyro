@@ -62,12 +62,22 @@ class FastingPage extends StatelessWidget {
                   ),
                 ),
               ),
+              if (store.fastOn)
+                GestureDetector(
+                  onTap: () => _editStart(context, store),
+                  child: Center(
+                    child: Text(
+                      'Started ${_when(store.fastStart)} · tap to change',
+                      style: VeyroText.body(13, color: v.mute),
+                    ),
+                  ),
+                ),
               VButton(
                 store.fastOn ? 'End fast' : 'Start fast',
                 height: 52,
                 radius: 16,
                 expand: true,
-                onPressed: store.toggleFast,
+                onPressed: () => _toggle(context, store, elapsed >= goal),
               ),
               VChipRow<int>(
                 options: {
@@ -133,9 +143,187 @@ class FastingPage extends StatelessWidget {
                   ],
                 ),
               ),
+              if (store.fastHistory.isNotEmpty) ...[
+                _StatsCard(history: store.fastHistory),
+                VCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const VLabel('History'),
+                      for (final r in store.fastHistory.take(10))
+                        Container(
+                          height: 48,
+                          margin: const EdgeInsets.only(top: 6),
+                          decoration: BoxDecoration(
+                            border: Border(top: BorderSide(color: v.line)),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                r.reachedGoal
+                                    ? Icons.check_circle
+                                    : Icons.circle_outlined,
+                                size: 20,
+                                color: r.reachedGoal ? v.acc : v.mute,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _hm(r.duration),
+                                      style: VeyroText.body(
+                                        15,
+                                        weight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    Text(
+                                      '${_when(r.start)} · goal ${r.goalHours}h',
+                                      style: VeyroText.body(12, color: v.mute),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              IconButton(
+                                visualDensity: VisualDensity.compact,
+                                icon: Icon(
+                                  Icons.delete_outline,
+                                  size: 20,
+                                  color: v.mute,
+                                ),
+                                onPressed: () => store.deleteFast(r),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
             ],
           );
         },
+      ),
+    );
+  }
+
+  static const _months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+
+  static String _hm(Duration d) =>
+      '${d.inHours}h ${(d.inMinutes % 60).toString().padLeft(2, '0')}m';
+
+  static String _when(DateTime t) {
+    final now = DateTime.now();
+    final day = DateTime(t.year, t.month, t.day);
+    final today = DateTime(now.year, now.month, now.day);
+    final h = t.hour % 12 == 0 ? 12 : t.hour % 12;
+    final time =
+        '$h:${t.minute.toString().padLeft(2, '0')} ${t.hour < 12 ? 'am' : 'pm'}';
+    final diff = today.difference(day).inDays;
+    final label = diff == 0
+        ? 'Today'
+        : diff == 1
+        ? 'Yesterday'
+        : '${_months[t.month - 1]} ${t.day}';
+    return '$label, $time';
+  }
+
+  Future<void> _toggle(
+    BuildContext context,
+    WellnessStore store,
+    bool reachedGoal,
+  ) async {
+    if (!store.fastOn) return store.startFast();
+    if (!reachedGoal) {
+      final ok = await showVeyroConfirm(
+        context,
+        title: 'End fast early?',
+        message:
+            'You haven\'t reached your ${store.fastHours} hour goal yet. The fast is still saved in your history.',
+        confirmLabel: 'End fast',
+        cancelLabel: 'Keep going',
+      );
+      if (!ok) return;
+    }
+    store.endFast();
+  }
+
+  Future<void> _editStart(BuildContext context, WellnessStore store) async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(store.fastStart),
+    );
+    if (picked == null) return;
+    final now = DateTime.now();
+    var start = DateTime(
+      now.year,
+      now.month,
+      now.day,
+      picked.hour,
+      picked.minute,
+    );
+    // A time later than now can only mean yesterday.
+    if (start.isAfter(now)) start = start.subtract(const Duration(days: 1));
+    store.setFastStart(start);
+  }
+}
+
+class _StatsCard extends StatelessWidget {
+  const _StatsCard({required this.history});
+
+  final List<FastRecord> history;
+
+  @override
+  Widget build(BuildContext context) {
+    final v = context.veyro;
+    final since = DateTime.now().subtract(const Duration(days: 7));
+    final recent = history.where((r) => r.end.isAfter(since)).toList();
+    final avg = recent.isEmpty
+        ? Duration.zero
+        : Duration(
+            minutes:
+                recent.fold<int>(0, (a, r) => a + r.duration.inMinutes) ~/
+                recent.length,
+          );
+    final hit = recent.where((r) => r.reachedGoal).length;
+    Widget stat(String value, String label) => Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(value, style: VeyroText.display(26)),
+          Text(label, style: VeyroText.body(11.5, color: v.mute)),
+        ],
+      ),
+    );
+    return VCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const VLabel('Last 7 days'),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              stat('${recent.length}', 'fasts'),
+              stat(recent.isEmpty ? '—' : FastingPage._hm(avg), 'average'),
+              stat('$hit', 'goals reached'),
+            ],
+          ),
+        ],
       ),
     );
   }

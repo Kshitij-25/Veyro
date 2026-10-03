@@ -1,8 +1,11 @@
 import 'package:drift/drift.dart' show Value;
 import 'package:fitness_trakcer/core/database/app_database.dart';
+import 'package:fitness_trakcer/core/di/injection.dart';
 import 'package:fitness_trakcer/core/utils/id_generator.dart';
+import 'package:fitness_trakcer/features/reminders/domain/services/reminder_scheduler.dart';
 import 'package:fitness_trakcer/features/wellness/data/datasources/wellness_local_data_source.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 /// A food in the sample catalogue.
 class FoodItem {
@@ -54,44 +57,40 @@ class Habit {
   int get shownStreak => streak + (today ? 1 : 0);
 }
 
-class Recipe {
-  const Recipe(this.name, this.kcal, this.minutes, this.protein, this.tags);
-
-  final String name;
-  final int kcal;
-  final int minutes;
-  final int protein;
-  final List<String> tags;
-}
-
-class Program {
-  const Program(
+/// A logged mind or breathing session.
+class MindRecord {
+  const MindRecord(
+    this.id,
     this.name,
-    this.weeks,
-    this.daysPerWeek,
-    this.level,
-    this.blurb,
+    this.category,
+    this.startedAt,
+    this.seconds,
   );
 
+  final String id;
   final String name;
-  final int weeks;
-  final int daysPerWeek;
-  final String level;
-  final String blurb;
+  final String category;
+  final DateTime startedAt;
+  final int seconds;
 }
 
-class ProgressCheckIn {
-  const ProgressCheckIn(this.date, this.kg);
+/// A finished fast.
+class FastRecord {
+  const FastRecord(this.id, this.start, this.end, this.goalHours);
 
-  final String date;
-  final double kg;
+  final String id;
+  final DateTime start;
+  final DateTime end;
+  final int goalHours;
+
+  Duration get duration => end.difference(start);
+  bool get reachedGoal => duration.inMinutes >= goalHours * 60;
 }
 
 /// Shared state for the wellness screens.
 ///
-/// Saved in the database: water, the food diary, calorie/macro/water targets
-/// and habits. Session-only (reset on restart): fasting, sleep goal, photos,
-/// programs, mind sessions, devices, community and the Settings toggles.
+/// Saved in the database: water, the food diary, calorie/macro/water targets,
+/// habits, fasting, mind sessions and the Settings values.
 class WellnessStore extends ChangeNotifier {
   WellnessStore._();
 
@@ -121,6 +120,22 @@ class WellnessStore extends ChangeNotifier {
     _today = _dayKey(DateTime.now());
 
     kcalGoal = int.tryParse(await data.getSetting('kcal_goal') ?? '') ?? 2400;
+    themeMode = switch (await data.getSetting('theme_mode')) {
+      'light' => ThemeMode.light,
+      'dark' => ThemeMode.dark,
+      _ => ThemeMode.system,
+    };
+    autoRest = await data.getSetting('auto_rest') != '0';
+    keepAwake = await data.getSetting('keep_awake') != '0';
+    haptic = await data.getSetting('haptic') != '0';
+    syncHealth = await data.getSetting('health_auto_sync') != '0';
+    restSeconds =
+        (int.tryParse(await data.getSetting('rest_seconds') ?? '') ?? 90).clamp(
+          15,
+          600,
+        );
+    sleepGoalHours =
+        double.tryParse(await data.getSetting('sleep_goal_h') ?? '') ?? 8;
     macroPreset = await data.getSetting('macro_preset') ?? 'Balanced';
     if (!macroPresets.containsKey(macroPreset)) macroPreset = 'Balanced';
     waterGoalMl =
@@ -150,6 +165,8 @@ class WellnessStore extends ChangeNotifier {
       );
     }
     await _loadHabits();
+    await _loadFasting();
+    await _loadMind();
     notifyListeners();
   }
 
@@ -157,42 +174,20 @@ class WellnessStore extends ChangeNotifier {
   ThemeMode themeMode = ThemeMode.system;
   bool autoRest = true;
   bool keepAwake = true;
-  bool sound = true;
   bool haptic = true;
-  bool weeklyReport = true;
-  bool shareActivity = true;
   bool syncHealth = true;
   int restSeconds = 90;
 
+  Duration get restDuration => Duration(seconds: restSeconds);
+
+  /// Short vibration when [haptic] is on.
+  void buzz({bool strong = false}) {
+    if (!haptic) return;
+    strong ? HapticFeedback.heavyImpact() : HapticFeedback.mediumImpact();
+  }
+
   // ---- nutrition (saved) ----
   static const mealNames = ['Breakfast', 'Lunch', 'Dinner', 'Snacks'];
-  static const foods = <FoodItem>[
-    FoodItem('Oatmeal with banana', '1 bowl', 310, 9, 58, 6),
-    FoodItem('Whey protein shake', '1 scoop', 130, 25, 3, 2),
-    FoodItem('Grilled chicken rice bowl', '1 bowl', 640, 52, 68, 14),
-    FoodItem('Greek yogurt', '170 g', 100, 17, 6, 0),
-    FoodItem('Scrambled eggs', '2 eggs', 180, 12, 2, 14),
-    FoodItem('Banana', '1 medium', 105, 1, 27, 0),
-    FoodItem('Almonds', '28 g', 165, 6, 6, 14),
-    FoodItem('Salmon fillet', '150 g', 310, 34, 0, 18),
-    FoodItem('Brown rice', '1 cup', 215, 5, 45, 2),
-    FoodItem('Avocado toast', '1 slice', 280, 7, 30, 15),
-    FoodItem('Peanut butter', '2 tbsp', 190, 7, 7, 16),
-    FoodItem('Protein bar', '1 bar', 210, 20, 22, 7),
-    FoodItem('Cottage cheese', '1 cup', 180, 24, 8, 5),
-    FoodItem('Sweet potato', '1 medium', 115, 2, 27, 0),
-    FoodItem('Turkey sandwich', '1 sandwich', 420, 32, 42, 12),
-    FoodItem('Apple', '1 medium', 95, 0, 25, 0),
-  ];
-  static const recipes = <Recipe>[
-    Recipe('Chicken Burrito Bowl', 520, 25, 46, ['High protein']),
-    Recipe('Overnight Oats', 340, 5, 14, ['Quick', 'Vegetarian']),
-    Recipe('Salmon & Greens', 480, 20, 38, ['High protein', 'Quick']),
-    Recipe('Lentil Curry', 430, 35, 21, ['Vegetarian']),
-    Recipe('Egg White Wrap', 290, 10, 28, ['High protein', 'Quick']),
-    Recipe('Tofu Stir Fry', 390, 20, 24, ['Vegetarian', 'Quick']),
-  ];
-
   final Map<String, List<LoggedFood>> meals = {
     'Breakfast': [],
     'Lunch': [],
@@ -206,7 +201,6 @@ class WellnessStore extends ChangeNotifier {
   int fatGoal = 80;
   int waterMl = 0;
   int waterGoalMl = 2500;
-  final Set<String> savedRecipes = {};
 
   /// Calories burned today, pushed in from the dashboard summary.
   int exerciseKcal = 0;
@@ -288,99 +282,130 @@ class WellnessStore extends ChangeNotifier {
     fatGoal = (kcalGoal * pr[2] / 100 / 9).round();
   }
 
-  void toggleRecipe(String name) {
-    savedRecipes.contains(name)
-        ? savedRecipes.remove(name)
-        : savedRecipes.add(name);
-    notifyListeners();
+  // ---- fasting ----
+  bool fastOn = false;
+  DateTime fastStart = DateTime.now();
+  int fastHours = 16;
+  String? _activeFastId;
+
+  /// Finished fasts, newest first.
+  final List<FastRecord> fastHistory = [];
+
+  Future<void> _loadFasting() async {
+    final data = _data;
+    if (data == null) return;
+    fastHours = int.tryParse(await data.getSetting('fast_hours') ?? '') ?? 16;
+    fastOn = false;
+    _activeFastId = null;
+    fastHistory.clear();
+    for (final r in await data.getFasts()) {
+      if (r.endedAt == null) {
+        // Only one fast can run; a stray older open row is closed off.
+        if (_activeFastId == null) {
+          fastOn = true;
+          fastStart = r.startedAt;
+          fastHours = r.goalHours;
+          _activeFastId = r.id;
+        } else {
+          await data.updateFast(
+            r.id,
+            FastingSessionsCompanion(endedAt: Value(r.startedAt)),
+          );
+        }
+      } else {
+        fastHistory.add(FastRecord(r.id, r.startedAt, r.endedAt!, r.goalHours));
+      }
+    }
+    await _syncFastAlert();
   }
 
-  // ---- fasting ----
-  bool fastOn = true;
-  DateTime fastStart = DateTime.now().subtract(
-    const Duration(minutes: (13 * 60) + 12),
-  );
-  int fastHours = 16;
+  /// Notification id for the "fast goal reached" alert; reminders use small
+  /// ids (`id * 10 + weekday`), so this can't collide.
+  static const _fastAlertId = 900000;
 
-  void toggleFast() {
-    fastOn = !fastOn;
+  /// Schedules (or cancels) the alert for when the running fast hits its
+  /// goal. Best effort: a missing permission just means no alert.
+  Future<void> _syncFastAlert({bool askPermission = false}) async {
+    try {
+      final scheduler = getIt<ReminderScheduler>();
+      final goal = fastStart.add(Duration(hours: fastHours));
+      if (!fastOn || !goal.isAfter(DateTime.now())) {
+        await scheduler.cancelOnce(_fastAlertId);
+        return;
+      }
+      if (askPermission && !await scheduler.requestPermission()) return;
+      await scheduler.scheduleOnce(
+        id: _fastAlertId,
+        title: 'Fast complete',
+        body: 'You\'ve reached your $fastHours hour fasting goal.',
+        at: goal,
+      );
+    } on Object {
+      // Notifications unavailable or denied.
+    }
+  }
+
+  void startFast() {
+    if (fastOn) return;
+    fastOn = true;
     fastStart = DateTime.now();
+    final id = _activeFastId = _ids.generate();
     notifyListeners();
+    _syncFastAlert(askPermission: true);
+    _data?.insertFast(
+      FastingSessionsCompanion.insert(
+        id: id,
+        startedAt: fastStart,
+        goalHours: fastHours,
+      ),
+    );
+  }
+
+  void endFast() {
+    final id = _activeFastId;
+    if (!fastOn || id == null) return;
+    final end = DateTime.now();
+    fastHistory.insert(0, FastRecord(id, fastStart, end, fastHours));
+    fastOn = false;
+    _activeFastId = null;
+    notifyListeners();
+    _syncFastAlert();
+    _data?.updateFast(id, FastingSessionsCompanion(endedAt: Value(end)));
   }
 
   void setFastHours(int h) {
     fastHours = h;
     notifyListeners();
+    _syncFastAlert();
+    _data?.setSetting('fast_hours', '$h');
+    final id = _activeFastId;
+    if (id != null) {
+      _data?.updateFast(id, FastingSessionsCompanion(goalHours: Value(h)));
+    }
+  }
+
+  /// Corrects when the current fast began (e.g. it was started late).
+  void setFastStart(DateTime start) {
+    final id = _activeFastId;
+    if (id == null || start.isAfter(DateTime.now())) return;
+    fastStart = start;
+    notifyListeners();
+    _syncFastAlert();
+    _data?.updateFast(id, FastingSessionsCompanion(startedAt: Value(start)));
+  }
+
+  void deleteFast(FastRecord r) {
+    fastHistory.remove(r);
+    notifyListeners();
+    _data?.deleteFast(r.id);
   }
 
   // ---- sleep ----
   double sleepGoalHours = 8;
-  bool windDown = true;
 
   void setSleepGoal(double h) {
-    sleepGoalHours = h.clamp(5, 11);
-    notifyListeners();
-  }
-
-  void setWindDown(bool on) {
-    windDown = on;
-    notifyListeners();
-  }
-
-  // ---- photos ----
-  final List<ProgressCheckIn> checkIns = [
-    const ProgressCheckIn('Oct 1', 80.1),
-    const ProgressCheckIn('Sep 1', 82.4),
-    const ProgressCheckIn('Aug 1', 84.5),
-  ];
-
-  void addCheckIn(double kg) {
-    if (checkIns.any((c) => c.date == 'Oct 3')) return;
-    checkIns.insert(0, ProgressCheckIn('Oct 3', kg));
-    notifyListeners();
-  }
-
-  // ---- programs ----
-  static const programs = <Program>[
-    Program(
-      'Strength Foundations',
-      8,
-      3,
-      'Beginner',
-      'Full-body barbell basics with linear progression.',
-    ),
-    Program(
-      'PPL Hypertrophy',
-      12,
-      6,
-      'Intermediate',
-      'Push, pull and legs, each twice a week.',
-    ),
-    Program(
-      '5K Builder',
-      8,
-      3,
-      'Beginner',
-      'Run-walk intervals building to a continuous 5K.',
-    ),
-    Program(
-      'Home HIIT Shred',
-      4,
-      5,
-      'All levels',
-      'Bodyweight circuits, 25 minutes a day.',
-    ),
-  ];
-  int? programIndex = 0;
-  int programWeek = 3;
-
-  void toggleProgram(int i) {
-    if (programIndex == i) {
-      programIndex = null;
-    } else {
-      programIndex = i;
-      programWeek = 1;
-    }
+    sleepGoalHours = h.clamp(5, 11).toDouble();
+    _data?.setSetting('sleep_goal_h', '$sleepGoalHours');
     notifyListeners();
   }
 
@@ -463,79 +488,89 @@ class WellnessStore extends ChangeNotifier {
   }
 
   // ---- mind ----
-  final Set<String> mindDone = {};
+  /// Newest first.
+  final List<MindRecord> mindLog = [];
 
-  void toggleMind(String name) {
-    mindDone.contains(name) ? mindDone.remove(name) : mindDone.add(name);
-    notifyListeners();
+  int get mindSecondsThisWeek {
+    final since = DateTime.now().subtract(const Duration(days: 7));
+    return mindLog
+        .where((m) => m.startedAt.isAfter(since))
+        .fold(0, (a, m) => a + m.seconds);
   }
 
-  // ---- devices & plan ----
-  final Map<String, bool> devices = {
-    'health': true,
-    'watch': true,
-    'garmin': false,
-    'strava': true,
-    'whoop': false,
-    'oura': false,
-    'fitbit': false,
-    'spotify': true,
-  };
-  String plan = 'Yearly';
-
-  void toggleDevice(String key) {
-    devices[key] = !(devices[key] ?? false);
-    notifyListeners();
+  bool mindDoneToday(String name) {
+    final now = DateTime.now();
+    return mindLog.any(
+      (m) =>
+          m.name == name &&
+          m.startedAt.year == now.year &&
+          m.startedAt.month == now.month &&
+          m.startedAt.day == now.day,
+    );
   }
 
-  void setPlan(String p) {
-    plan = p;
-    notifyListeners();
+  Future<void> _loadMind() async {
+    final data = _data;
+    if (data == null) return;
+    mindLog
+      ..clear()
+      ..addAll([
+        for (final r in await data.getMindSessions())
+          MindRecord(r.id, r.name, r.category, r.startedAt, r.seconds),
+      ]);
   }
 
-  // ---- community ----
-  final Set<int> kudos = {};
-  final Set<int> joined = {1};
-
-  void toggleKudos(int id) {
-    kudos.contains(id) ? kudos.remove(id) : kudos.add(id);
+  /// Saves a session. Anything under 30 seconds is ignored.
+  void logMind(String name, String category, DateTime startedAt, int seconds) {
+    if (seconds < 30) return;
+    final id = _ids.generate();
+    mindLog.insert(0, MindRecord(id, name, category, startedAt, seconds));
     notifyListeners();
+    _data?.insertMind(
+      MindSessionsCompanion.insert(
+        id: id,
+        name: name,
+        category: category,
+        startedAt: startedAt,
+        seconds: seconds,
+      ),
+    );
   }
 
-  void toggleJoined(int id) {
-    joined.contains(id) ? joined.remove(id) : joined.add(id);
-    notifyListeners();
-  }
-
-  // ---- settings mutators ----
+  // ---- settings mutators (saved) ----
   void setThemeMode(ThemeMode m) {
     themeMode = m;
     notifyListeners();
+    _data?.setSetting('theme_mode', m.name);
   }
 
   void setToggle(String key, bool on) {
+    final column = switch (key) {
+      'autoRest' => 'auto_rest',
+      'keepAwake' => 'keep_awake',
+      'haptic' => 'haptic',
+      'health' => 'health_auto_sync',
+      _ => null,
+    };
+    if (column == null) return;
     switch (key) {
       case 'autoRest':
         autoRest = on;
       case 'keepAwake':
         keepAwake = on;
-      case 'sound':
-        sound = on;
       case 'haptic':
         haptic = on;
-      case 'weekly':
-        weeklyReport = on;
-      case 'pub':
-        shareActivity = on;
       case 'health':
         syncHealth = on;
     }
     notifyListeners();
+    _data?.setSetting(column, on ? '1' : '0');
   }
 
   void setRestSeconds(int s) {
     restSeconds = s.clamp(15, 600);
     notifyListeners();
+    _data?.setSetting('rest_seconds', '$restSeconds');
   }
 }
 

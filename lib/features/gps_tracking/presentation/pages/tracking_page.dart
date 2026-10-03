@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:fitness_trakcer/core/layout/content_constraint.dart';
 import 'package:fitness_trakcer/core/router/app_routes.dart';
 import 'package:fitness_trakcer/core/theme/veyro_colors.dart';
@@ -17,7 +15,6 @@ import 'package:fitness_trakcer/features/profile/presentation/unit_system_contex
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 const _bg = Color(0xFF101010);
 const _fg = Color(0xFFF5F3F0);
@@ -25,7 +22,7 @@ const _panel = Color(0xFF242220);
 const _muted = Color(0xFF9A948F);
 
 /// Live GPS recording screen. Always dark, like a workout watch face.
-/// `state.snapshot.route` holds the points drawn on the placeholder map.
+/// `state.snapshot.route` holds the points drawn on the route canvas.
 class TrackingPage extends StatelessWidget {
   const TrackingPage({super.key});
 
@@ -91,7 +88,9 @@ class TrackingPage extends StatelessWidget {
                     ),
                     child: Row(
                       children: [
-                        for (final type in TrackedActivityType.values)
+                        for (final type in TrackedActivityType.values.where(
+                          (t) => t.isRecordable,
+                        ))
                           GestureDetector(
                             onTap: idle ? () => cubit.selectType(type) : null,
                             child: Container(
@@ -145,16 +144,18 @@ class TrackingPage extends StatelessWidget {
                 ),
               ],
             );
-            final secs = snapshot?.elapsed.inSeconds ?? 0;
-            final live = state.status == TrackingStatus.tracking;
-            final hr = live
-                ? (138 + 10 * math.sin(secs / 4) + secs / 60).round().toString()
-                : '--';
-            final cadence = live
-                ? (state.type == TrackedActivityType.cycle
-                      ? '84 rpm'
-                      : '168 spm')
-                : '--';
+            final live = state.status != TrackingStatus.idle;
+            final meters = snapshot?.distanceMeters ?? 0;
+            final seconds = snapshot?.elapsed.inSeconds ?? 0;
+            final avgPace = live && meters >= 10
+                ? seconds / (meters / 1000)
+                : 0;
+            final avgSpeedKmh = live && seconds > 0
+                ? (meters / 1000) / (seconds / 3600)
+                : 0.0;
+            final avgSpeed = units == UnitSystem.metric
+                ? avgSpeedKmh
+                : avgSpeedKmh / 1.609344;
             final stats = Column(
               children: [
                 Padding(
@@ -174,9 +175,22 @@ class TrackingPage extends StatelessWidget {
                   padding: const EdgeInsets.fromLTRB(14, 0, 14, 10),
                   child: Row(
                     children: [
-                      _Tile('Heart rate', hr, 'bpm'),
+                      _Tile(
+                        'Avg pace',
+                        avgPace > 0
+                            ? units
+                                  .formatPace(avgPace.toDouble())
+                                  .split(' ')
+                                  .first
+                            : '--',
+                        '/${units.distanceUnit}',
+                      ),
                       const SizedBox(width: 10),
-                      _Tile('Cadence', cadence, ''),
+                      _Tile(
+                        'Avg speed',
+                        avgSpeed > 0 ? avgSpeed.toStringAsFixed(1) : '--',
+                        units == UnitSystem.metric ? 'km/h' : 'mph',
+                      ),
                     ],
                   ),
                 ),
@@ -194,17 +208,6 @@ class TrackingPage extends StatelessWidget {
                 children: [
                   CustomPaint(
                     painter: RoutePainter(snapshot?.route ?? const []),
-                  ),
-                  Positioned(
-                    left: 14,
-                    top: 12,
-                    child: Text(
-                      'map placeholder · GPS route',
-                      style: GoogleFonts.robotoMono(
-                        fontSize: 11,
-                        color: const Color(0xFF7D7772),
-                      ),
-                    ),
                   ),
                   if (denied)
                     Container(

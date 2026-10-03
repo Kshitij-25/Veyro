@@ -10,6 +10,7 @@ import 'package:fitness_trakcer/core/widgets/elapsed_time_text.dart';
 import 'package:fitness_trakcer/core/widgets/veyro_extras.dart';
 import 'package:fitness_trakcer/core/widgets/veyro_widgets.dart';
 import 'package:fitness_trakcer/features/profile/presentation/unit_system_context.dart';
+import 'package:fitness_trakcer/features/wellness/presentation/wellness_store.dart';
 import 'package:fitness_trakcer/features/workout/domain/entities/exercise.dart';
 import 'package:fitness_trakcer/features/workout/domain/entities/workout_exercise.dart';
 import 'package:fitness_trakcer/features/workout/domain/entities/workout_set.dart';
@@ -24,8 +25,6 @@ import 'package:go_router/go_router.dart';
 
 class ActiveWorkoutPage extends StatefulWidget {
   const ActiveWorkoutPage({super.key});
-
-  static const defaultRest = Duration(seconds: 90);
 
   @override
   State<ActiveWorkoutPage> createState() => _ActiveWorkoutPageState();
@@ -331,7 +330,12 @@ class _FocusView extends StatelessWidget {
         onChanged: (s) => cubit.updateSet(entry.id, s),
         onComplete: () {
           cubit.toggleSetCompleted(entry.id, sets[si].id);
-          context.read<RestTimerCubit>().start(ActiveWorkoutPage.defaultRest);
+          WellnessStore.instance.buzz();
+          if (WellnessStore.instance.autoRest) {
+            context.read<RestTimerCubit>().start(
+              WellnessStore.instance.restDuration,
+            );
+          }
           final next = sets.indexWhere(
             (s) => !s.isCompleted && s.id != sets[si].id,
           );
@@ -743,7 +747,9 @@ class _SetEditorState extends State<_SetEditor> {
               ),
             ),
             child: Text(
-              'COMPLETE SET · REST ${ActiveWorkoutPage.defaultRest.clock}',
+              WellnessStore.instance.autoRest
+                  ? 'COMPLETE SET · REST ${WellnessStore.instance.restDuration.clock}'
+                  : 'COMPLETE SET',
               style: VeyroText.display(
                 22,
                 color: VeyroColors.onAccent,
@@ -943,9 +949,12 @@ class _ExerciseCard extends StatelessWidget {
                 onToggleCompleted: () {
                   cubit.toggleSetCompleted(entry.id, set.id);
                   if (!set.isCompleted) {
-                    context.read<RestTimerCubit>().start(
-                      ActiveWorkoutPage.defaultRest,
-                    );
+                    WellnessStore.instance.buzz();
+                    if (WellnessStore.instance.autoRest) {
+                      context.read<RestTimerCubit>().start(
+                        WellnessStore.instance.restDuration,
+                      );
+                    }
                   }
                 },
                 onDelete: () => cubit.removeSet(entry.id, set.id),

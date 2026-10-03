@@ -323,7 +323,7 @@ class _Explore extends StatelessWidget {
   Widget build(BuildContext context) {
     final v = context.veyro;
     final tiles = [
-      ('Programs & classes', 'Guided plans', AppRoutes.discover),
+      ('Programs & sessions', 'Guided plans', AppRoutes.discover),
       ('Calendar', 'Month view', AppRoutes.calendar),
       ('Timers', 'HIIT, stopwatch', AppRoutes.timers),
       ('Calculators', '1RM, plates, TDEE', AppRoutes.tools),

@@ -14,4 +14,9 @@ abstract interface class BodyMetricsRepository {
   Future<Result<void>> saveMeasurement(BodyMeasurement measurement);
 
   Future<Result<void>> deleteMeasurement(String id);
+
+  /// Imports weight and body-fat readings from the platform health store.
+  /// Re-importing the same reading never creates a duplicate. Returns how
+  /// many entries were written.
+  Future<Result<int>> importFromHealth(DateRange range);
 }

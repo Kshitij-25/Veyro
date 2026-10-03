@@ -58,4 +58,19 @@ class ActivityRepositoryImpl implements ActivityRepository {
       for (final summary in summaries) summary.toEntity().toCompanion(now),
     ]);
   });
+
+  @override
+  Future<Result<int>> importFromHealth(DateRange range) => guard(() async {
+    final summaries = (await _healthDataSource.getDailySummaries(range))
+        .where(
+          (s) =>
+              s.steps > 0 || s.distanceMeters > 0 || s.activeCaloriesKcal > 0,
+        )
+        .toList();
+    final now = _clock.now();
+    await _localDataSource.upsertAll([
+      for (final summary in summaries) summary.toEntity().toCompanion(now),
+    ]);
+    return summaries.length;
+  });
 }

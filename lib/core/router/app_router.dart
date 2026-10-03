@@ -8,6 +8,7 @@ import 'package:fitness_trakcer/features/activity/presentation/pages/activity_pa
 import 'package:fitness_trakcer/features/body_metrics/presentation/cubit/body_metrics_cubit.dart';
 import 'package:fitness_trakcer/features/body_metrics/presentation/pages/body_metrics_page.dart';
 import 'package:fitness_trakcer/features/dashboard/presentation/pages/dashboard_page.dart';
+import 'package:fitness_trakcer/features/food_catalog/presentation/cubit/food_catalog_cubit.dart';
 import 'package:fitness_trakcer/features/goals/presentation/cubit/achievements_cubit.dart';
 import 'package:fitness_trakcer/features/goals/presentation/cubit/goals_cubit.dart';
 import 'package:fitness_trakcer/features/goals/presentation/pages/achievements_page.dart';
@@ -22,15 +23,18 @@ import 'package:fitness_trakcer/features/profile/presentation/cubit/profile_cubi
 import 'package:fitness_trakcer/features/profile/presentation/pages/onboarding_page.dart';
 import 'package:fitness_trakcer/features/profile/presentation/pages/settings_page.dart';
 import 'package:fitness_trakcer/features/profile/presentation/pages/splash_page.dart';
+import 'package:fitness_trakcer/features/programs/presentation/cubit/programs_cubit.dart';
+import 'package:fitness_trakcer/features/progress_photos/presentation/cubit/check_ins_cubit.dart';
+import 'package:fitness_trakcer/features/recovery/presentation/cubit/recovery_details_cubit.dart';
 import 'package:fitness_trakcer/features/reminders/presentation/cubit/reminders_cubit.dart';
 import 'package:fitness_trakcer/features/reminders/presentation/pages/reminders_page.dart';
 import 'package:fitness_trakcer/features/routines/presentation/cubit/routine_editor_cubit.dart';
 import 'package:fitness_trakcer/features/routines/presentation/cubit/routines_cubit.dart';
 import 'package:fitness_trakcer/features/routines/presentation/pages/routine_editor_page.dart';
 import 'package:fitness_trakcer/features/routines/presentation/pages/routines_page.dart';
+import 'package:fitness_trakcer/features/sleep/presentation/cubit/sleep_cubit.dart';
 import 'package:fitness_trakcer/features/wellness/presentation/pages/body_composition_page.dart';
 import 'package:fitness_trakcer/features/wellness/presentation/pages/calendar_page.dart';
-import 'package:fitness_trakcer/features/wellness/presentation/pages/community_page.dart';
 import 'package:fitness_trakcer/features/wellness/presentation/pages/devices_page.dart';
 import 'package:fitness_trakcer/features/wellness/presentation/pages/discover_page.dart';
 import 'package:fitness_trakcer/features/wellness/presentation/pages/exercise_detail_page.dart';
@@ -42,8 +46,6 @@ import 'package:fitness_trakcer/features/wellness/presentation/pages/mind_page.d
 import 'package:fitness_trakcer/features/wellness/presentation/pages/nutrition_targets_page.dart';
 import 'package:fitness_trakcer/features/wellness/presentation/pages/photos_page.dart';
 import 'package:fitness_trakcer/features/wellness/presentation/pages/preferences_page.dart';
-import 'package:fitness_trakcer/features/wellness/presentation/pages/pro_page.dart';
-import 'package:fitness_trakcer/features/wellness/presentation/pages/recipes_page.dart';
 import 'package:fitness_trakcer/features/wellness/presentation/pages/recovery_page.dart';
 import 'package:fitness_trakcer/features/wellness/presentation/pages/report_page.dart';
 import 'package:fitness_trakcer/features/wellness/presentation/pages/scan_page.dart';
@@ -97,7 +99,6 @@ class AppRouter {
           _workoutsBranch(),
           _fuelBranch(),
           _progressBranch(),
-          _communityBranch(),
         ],
       ),
     ],
@@ -144,10 +145,6 @@ class AppRouter {
               GoRoute(
                 path: 'devices',
                 builder: (context, state) => const DevicesPage(),
-              ),
-              GoRoute(
-                path: 'pro',
-                builder: (context, state) => const ProPage(),
               ),
             ],
           ),
@@ -205,7 +202,10 @@ class AppRouter {
           ),
           GoRoute(
             path: 'discover',
-            builder: (context, state) => const DiscoverPage(),
+            builder: (context, state) => BlocProvider(
+              create: (_) => getIt<ProgramsCubit>()..load(),
+              child: const DiscoverPage(),
+            ),
           ),
           GoRoute(
             path: 'calendar',
@@ -282,6 +282,7 @@ class AppRouter {
           providers: [
             BlocProvider(create: (_) => getIt<BodyMetricsCubit>()..start()),
             BlocProvider(create: (_) => getIt<PersonalRecordsCubit>()..load()),
+            BlocProvider.value(value: getIt<CheckInsCubit>()..start()),
           ],
           child: const BodyMetricsPage(),
         ),
@@ -302,19 +303,31 @@ class AppRouter {
           ),
           GoRoute(
             path: 'body',
-            builder: (context, state) => const BodyCompositionPage(),
+            builder: (context, state) => BlocProvider(
+              create: (_) => getIt<BodyMetricsCubit>()..start(),
+              child: const BodyCompositionPage(),
+            ),
           ),
           GoRoute(
             path: 'sleep',
-            builder: (context, state) => const SleepPage(),
+            builder: (context, state) => BlocProvider(
+              create: (_) => getIt<SleepCubit>()..load(),
+              child: const SleepPage(),
+            ),
           ),
           GoRoute(
             path: 'recovery',
-            builder: (context, state) => const RecoveryPage(),
+            builder: (context, state) => BlocProvider(
+              create: (_) => getIt<RecoveryDetailsCubit>()..load(),
+              child: const RecoveryPage(),
+            ),
           ),
           GoRoute(
             path: 'photos',
-            builder: (context, state) => const PhotosPage(),
+            builder: (context, state) => BlocProvider.value(
+              value: getIt<CheckInsCubit>()..start(),
+              child: const PhotosPage(),
+            ),
           ),
           GoRoute(
             path: 'report',
@@ -337,14 +350,19 @@ class AppRouter {
         routes: [
           GoRoute(
             path: 'log',
-            builder: (context, state) => FoodSearchPage(
-              initialMeal: state.uri.queryParameters['meal'] ?? 'Snacks',
+            builder: (context, state) => BlocProvider(
+              create: (_) => getIt<FoodCatalogCubit>()..start(),
+              child: FoodSearchPage(
+                initialMeal: state.uri.queryParameters['meal'] ?? 'Snacks',
+              ),
             ),
           ),
-          GoRoute(path: 'scan', builder: (context, state) => const ScanPage()),
           GoRoute(
-            path: 'recipes',
-            builder: (context, state) => const RecipesPage(),
+            path: 'scan',
+            builder: (context, state) => BlocProvider(
+              create: (_) => getIt<FoodCatalogCubit>()..start(),
+              child: const ScanPage(),
+            ),
           ),
           GoRoute(
             path: 'fasting',
@@ -355,15 +373,6 @@ class AppRouter {
             builder: (context, state) => const NutritionTargetsPage(),
           ),
         ],
-      ),
-    ],
-  );
-
-  StatefulShellBranch _communityBranch() => StatefulShellBranch(
-    routes: [
-      GoRoute(
-        path: AppRoutes.community,
-        builder: (context, state) => const CommunityPage(),
       ),
     ],
   );

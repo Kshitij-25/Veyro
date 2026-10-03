@@ -4,6 +4,7 @@ import 'package:fitness_trakcer/core/database/tables/app_metadata_tables.dart';
 import 'package:fitness_trakcer/core/database/tables/body_metrics_tables.dart';
 import 'package:fitness_trakcer/core/database/tables/goal_tables.dart';
 import 'package:fitness_trakcer/core/database/tables/profile_tables.dart';
+import 'package:fitness_trakcer/core/database/tables/progress_photo_tables.dart';
 import 'package:fitness_trakcer/core/database/tables/reminder_tables.dart';
 import 'package:fitness_trakcer/core/database/tables/routine_tables.dart';
 import 'package:fitness_trakcer/core/database/tables/tracking_tables.dart';
@@ -32,13 +33,19 @@ part 'app_database.g.dart';
     HabitCompletions,
     FoodLogEntries,
     WaterLogs,
+    ProgressCheckIns,
+    ProgressPhotos,
+    FastingSessions,
+    MindSessions,
+    SavedFoods,
+    RecoveryHistory,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 9;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -70,6 +77,25 @@ class AppDatabase extends _$AppDatabase {
         await migrator.createTable(habitCompletions);
         await migrator.createTable(foodLogEntries);
         await migrator.createTable(waterLogs);
+      }
+      if (from < 5) {
+        await migrator.createTable(progressCheckIns);
+        await migrator.createTable(progressPhotos);
+      }
+      if (from < 6) {
+        await migrator.createTable(fastingSessions);
+      }
+      if (from < 7) {
+        await migrator.createTable(mindSessions);
+      }
+      if (from < 8) {
+        await migrator.createTable(savedFoods);
+      }
+      if (from < 9) {
+        await migrator.createTable(recoveryHistory);
+      }
+      if (from < 9) {
+        await migrator.addColumn(trackedActivities, trackedActivities.title);
       }
     },
     beforeOpen: (details) async {

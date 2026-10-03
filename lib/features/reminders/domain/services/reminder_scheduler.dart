@@ -10,5 +10,16 @@ abstract interface class ReminderScheduler {
 
   Future<void> cancel(int reminderId);
 
+  /// Schedules a single notification at [at], replacing any earlier one with
+  /// the same [id]. Use ids that can't collide with reminder ids.
+  Future<void> scheduleOnce({
+    required int id,
+    required String title,
+    required String body,
+    required DateTime at,
+  });
+
+  Future<void> cancelOnce(int id);
+
   Future<void> cancelAll();
 }

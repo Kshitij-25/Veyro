@@ -35,6 +35,7 @@ extension TrackedActivityRowMapper on TrackedActivityRow {
   TrackedActivity toEntity() => TrackedActivity(
     id: id,
     type: TrackedActivityType.values.byName(type),
+    title: title,
     startedAt: startedAt,
     endedAt: endedAt,
     movingDuration: Duration(seconds: movingSeconds),
@@ -49,6 +50,7 @@ extension TrackedActivityEntityMapper on TrackedActivity {
   TrackedActivitiesCompanion toCompanion() => TrackedActivitiesCompanion(
     id: Value(id),
     type: Value(type.name),
+    title: Value(title),
     startedAt: Value(startedAt),
     endedAt: Value(endedAt),
     movingSeconds: Value(movingDuration.inSeconds),

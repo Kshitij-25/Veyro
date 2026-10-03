@@ -9,6 +9,7 @@ import 'package:fitness_trakcer/core/widgets/loading_view.dart';
 import 'package:fitness_trakcer/core/widgets/veyro_widgets.dart';
 import 'package:fitness_trakcer/features/activity/domain/entities/health_access_status.dart';
 import 'package:fitness_trakcer/features/activity/presentation/cubit/activity_cubit.dart';
+import 'package:fitness_trakcer/features/health_sync/presentation/cubit/health_sync_cubit.dart';
 import 'package:fitness_trakcer/features/profile/presentation/unit_system_context.dart';
 import 'package:fitness_trakcer/features/wellness/presentation/wellness_format.dart';
 import 'package:flutter/material.dart';
@@ -310,7 +311,14 @@ class _HealthAccessTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<ActivityCubit>();
-    final (title, subtitle, dot, onTap) = switch (state.healthAccess) {
+    // iOS never says whether read access was granted, so also trust the
+    // app-wide Health sync, which remembers a successful connection.
+    final connected = context.watch<HealthSyncCubit>().state.isConnected;
+    final access =
+        connected && state.healthAccess != HealthAccessStatus.unavailable
+        ? HealthAccessStatus.granted
+        : state.healthAccess;
+    final (title, subtitle, dot, onTap) = switch (access) {
       HealthAccessStatus.unavailable => (
         'Health data unavailable here',
         'Log today\'s activity manually.',

@@ -14,4 +14,9 @@ abstract interface class TrackedActivityRepository {
   Future<Result<void>> saveActivity(TrackedActivity activity);
 
   Future<Result<void>> deleteActivity(String id);
+
+  /// Imports runs, walks and rides recorded by other apps and devices from
+  /// the health store. Re-importing never duplicates. Returns how many were
+  /// written.
+  Future<Result<int>> importFromHealth(DateRange range);
 }

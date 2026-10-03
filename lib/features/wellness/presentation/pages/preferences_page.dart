@@ -68,7 +68,6 @@ class PreferencesPage extends StatelessWidget {
                     'During workouts and recordings',
                     store.keepAwake,
                   ),
-                  ('sound', 'Sounds', 'Timer beeps and cues', store.sound),
                   (
                     'haptic',
                     'Haptics',
@@ -76,21 +75,9 @@ class PreferencesPage extends StatelessWidget {
                     store.haptic,
                   ),
                   (
-                    'weekly',
-                    'Weekly report',
-                    'Sunday summary notification',
-                    store.weeklyReport,
-                  ),
-                  (
-                    'pub',
-                    'Share activity with friends',
-                    'Visible in the community feed',
-                    store.shareActivity,
-                  ),
-                  (
                     'health',
-                    'Sync with Health',
-                    'Steps, heart rate and sleep',
+                    'Auto-sync Health',
+                    'On launch and when you return to the app',
                     store.syncHealth,
                   ),
                 ])
@@ -115,7 +102,7 @@ class PreferencesPage extends StatelessWidget {
             ),
           ),
           Text(
-            'Appearance, toggles and default rest apply to this session only.',
+            'Saved on this device. For a Sunday summary, add a reminder under Reminders.',
             textAlign: TextAlign.center,
             style: VeyroText.body(12, color: context.veyro.mute),
           ),

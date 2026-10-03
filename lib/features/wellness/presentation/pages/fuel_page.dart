@@ -35,13 +35,6 @@ class FuelPage extends StatelessWidget {
                   trailing: Row(
                     children: [
                       VButton(
-                        'Recipes',
-                        style: VButtonStyle.card,
-                        height: 36,
-                        onPressed: () => context.go(AppRoutes.recipes),
-                      ),
-                      const SizedBox(width: 8),
-                      VButton(
                         'Targets',
                         style: VButtonStyle.card,
                         height: 36,

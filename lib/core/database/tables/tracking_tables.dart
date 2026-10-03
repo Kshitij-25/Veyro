@@ -4,6 +4,9 @@ import 'package:drift/drift.dart';
 class TrackedActivities extends Table {
   TextColumn get id => text()();
   TextColumn get type => text()();
+
+  /// Name from the source app for imported workouts, e.g. "Yoga".
+  TextColumn get title => text().nullable()();
   DateTimeColumn get startedAt => dateTime()();
   DateTimeColumn get endedAt => dateTime()();
   IntColumn get movingSeconds => integer()();

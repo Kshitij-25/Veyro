@@ -16,5 +16,16 @@ class UnsupportedReminderScheduler implements ReminderScheduler {
   Future<void> cancel(int reminderId) async {}
 
   @override
+  Future<void> scheduleOnce({
+    required int id,
+    required String title,
+    required String body,
+    required DateTime at,
+  }) async {}
+
+  @override
+  Future<void> cancelOnce(int id) async {}
+
+  @override
   Future<void> cancelAll() async {}
 }

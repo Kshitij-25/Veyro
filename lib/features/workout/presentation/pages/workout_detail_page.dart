@@ -1,9 +1,10 @@
+import 'package:fitness_trakcer/core/share/share_summary.dart';
 import 'package:fitness_trakcer/core/theme/veyro_colors.dart';
 import 'package:fitness_trakcer/core/theme/veyro_text.dart';
 import 'package:fitness_trakcer/core/units/unit_converter.dart';
 import 'package:fitness_trakcer/core/units/unit_formatter.dart';
+import 'package:fitness_trakcer/core/units/unit_system.dart';
 import 'package:fitness_trakcer/core/widgets/loading_view.dart';
-import 'package:fitness_trakcer/core/widgets/veyro_extras.dart';
 import 'package:fitness_trakcer/core/widgets/veyro_widgets.dart';
 import 'package:fitness_trakcer/features/profile/presentation/unit_system_context.dart';
 import 'package:fitness_trakcer/features/workout/domain/entities/workout.dart';
@@ -11,6 +12,43 @@ import 'package:fitness_trakcer/features/workout/presentation/cubit/workout_deta
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+
+String _shareText(Workout w, UnitSystem units) {
+  final b = StringBuffer(w.name)
+    ..writeln()
+    ..writeln(
+      '${DateFormat('EEEE, MMM d').format(w.startedAt)} · '
+      '${w.durationAt(DateTime.now()).inMinutes} min',
+    );
+  if (w.totalVolumeKg > 0) {
+    b.writeln(
+      'Volume: ${UnitConverter.weightToDisplay(w.totalVolumeKg, units).round()} '
+      '${units.weightUnit}',
+    );
+  }
+  for (final e in w.exercises) {
+    final sets = e.sets.where((s) => s.isCompleted).toList();
+    if (sets.isEmpty) continue;
+    b
+      ..writeln()
+      ..writeln(e.exercise.name);
+    for (final s in sets) {
+      b.writeln(
+        [
+          if (s.weightKg != null) units.formatWeight(s.weightKg!),
+          if (s.reps != null) '× ${s.reps}',
+          if (s.distanceMeters != null) units.formatDistance(s.distanceMeters!),
+          if (s.durationSeconds != null)
+            Duration(seconds: s.durationSeconds!).clock,
+        ].join(' '),
+      );
+    }
+  }
+  b
+    ..writeln()
+    ..write('Logged with Veyro');
+  return b.toString();
+}
 
 class WorkoutDetailPage extends StatelessWidget {
   const WorkoutDetailPage({super.key});
@@ -46,6 +84,18 @@ class WorkoutDetailPage extends StatelessWidget {
         );
         return VSubPage(
           title: workout.name,
+          action: Builder(
+            builder: (context) => IconButton.filled(
+              style: IconButton.styleFrom(
+                backgroundColor: v.card,
+                foregroundColor: v.ink,
+              ),
+              tooltip: 'Share',
+              onPressed: () =>
+                  shareSummary(context, _shareText(workout, units)),
+              icon: const Icon(Icons.ios_share, size: 20),
+            ),
+          ),
           children: [
             Text(
               DateFormat('EEEE, MMM d').format(workout.startedAt).toUpperCase(),
@@ -70,7 +120,6 @@ class WorkoutDetailPage extends StatelessWidget {
               ],
             ),
             _MusclesCard(workout: workout),
-            const _FeelCard(),
             for (final entry in workout.exercises)
               VCard(
                 padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
@@ -181,41 +230,6 @@ class _MusclesCard extends StatelessWidget {
                 ],
               ),
             ),
-        ],
-      ),
-    );
-  }
-}
-
-class _FeelCard extends StatefulWidget {
-  const _FeelCard();
-
-  @override
-  State<_FeelCard> createState() => _FeelCardState();
-}
-
-class _FeelCardState extends State<_FeelCard> {
-  String? _feel;
-
-  @override
-  Widget build(BuildContext context) {
-    return VCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const VLabel('How did it feel?'),
-          const SizedBox(height: 8),
-          VChipRow<String>(
-            options: const {
-              'Easy': 'Easy',
-              'Good': 'Good',
-              'Hard': 'Hard',
-              'Brutal': 'Brutal',
-            },
-            selected: _feel,
-            onCard: true,
-            onChanged: (f) => setState(() => _feel = f),
-          ),
         ],
       ),
     );

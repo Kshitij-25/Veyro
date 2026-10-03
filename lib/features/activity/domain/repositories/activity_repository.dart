@@ -18,4 +18,8 @@ abstract interface class ActivityRepository {
 
   /// Reads the days in [range] from the platform health store and caches them.
   Future<Result<void>> syncFromHealth(DateRange range);
+
+  /// Like [syncFromHealth] but writes only days with some activity, and
+  /// returns how many. Used for the whole-history import.
+  Future<Result<int>> importFromHealth(DateRange range);
 }
