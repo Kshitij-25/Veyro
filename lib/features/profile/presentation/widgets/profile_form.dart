@@ -1,14 +1,16 @@
+import 'package:fitness_trakcer/core/theme/veyro_colors.dart';
+import 'package:fitness_trakcer/core/theme/veyro_text.dart';
 import 'package:fitness_trakcer/core/units/unit_converter.dart';
 import 'package:fitness_trakcer/core/units/unit_system.dart';
 import 'package:fitness_trakcer/core/utils/parsing.dart';
+import 'package:fitness_trakcer/core/widgets/veyro_widgets.dart';
 import 'package:fitness_trakcer/features/profile/domain/entities/activity_level.dart';
 import 'package:fitness_trakcer/features/profile/domain/entities/fitness_goal.dart';
 import 'package:fitness_trakcer/features/profile/domain/entities/sex.dart';
 import 'package:fitness_trakcer/features/profile/domain/entities/user_profile.dart';
 import 'package:flutter/material.dart';
 
-/// Placeholder form for creating or editing the profile. Replace with your
-/// own design; it only needs to produce a [UserProfile].
+/// Form for creating or editing the profile; produces a [UserProfile].
 class ProfileForm extends StatefulWidget {
   const ProfileForm({
     required this.submitLabel,
@@ -37,6 +39,7 @@ class _ProfileFormState extends State<ProfileForm> {
   late ActivityLevel _activityLevel;
   late FitnessGoal _fitnessGoal;
   DateTime? _birthDate;
+  bool _submitted = false;
 
   @override
   void initState() {
@@ -109,6 +112,7 @@ class _ProfileFormState extends State<ProfileForm> {
   }
 
   void _submit() {
+    _submitted = true;
     if (!_formKey.currentState!.validate() || _birthDate == null) {
       setState(() {});
       return;
@@ -142,100 +146,141 @@ class _ProfileFormState extends State<ProfileForm> {
 
   @override
   Widget build(BuildContext context) {
+    final v = context.veyro;
     return Form(
       key: _formKey,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          TextFormField(
-            controller: _name,
-            decoration: const InputDecoration(labelText: 'Name'),
-            textCapitalization: TextCapitalization.words,
-            validator: (v) =>
-                (v == null || v.trim().isEmpty) ? 'Required' : null,
-          ),
-          const SizedBox(height: 16),
-          SegmentedButton<UnitSystem>(
-            segments: const [
-              ButtonSegment(value: UnitSystem.metric, label: Text('Metric')),
-              ButtonSegment(
-                value: UnitSystem.imperial,
-                label: Text('Imperial'),
+          VTwoColumn(
+            left: [
+              VCard(
+                onTap: null,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    VField(
+                      label: 'Name',
+                      controller: _name,
+                      textCapitalization: TextCapitalization.words,
+                      validator: (v) =>
+                          (v == null || v.trim().isEmpty) ? 'Required' : null,
+                    ),
+                    const SizedBox(height: 14),
+                    VSegmented<UnitSystem>(
+                      options: const {
+                        UnitSystem.metric: 'Metric',
+                        UnitSystem.imperial: 'Imperial',
+                      },
+                      selected: _units,
+                      onChanged: _changeUnits,
+                    ),
+                    const SizedBox(height: 14),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: VField(
+                            label: 'Height (${_units.lengthUnit})',
+                            controller: _height,
+                            numeric: true,
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            validator: _requiredNumber,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: VField(
+                            label: 'Weight (${_units.weightUnit})',
+                            controller: _weight,
+                            numeric: true,
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            validator: _requiredNumber,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    const VLabel('Date of birth'),
+                    const SizedBox(height: 6),
+                    InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: _pickBirthDate,
+                      child: Container(
+                        height: 46,
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        alignment: Alignment.centerLeft,
+                        decoration: BoxDecoration(
+                          color: v.bg,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: _birthDate == null && _submitted
+                                ? VeyroColors.danger
+                                : v.line,
+                          ),
+                        ),
+                        child: Text(
+                          _birthDate == null
+                              ? 'Select'
+                              : MaterialLocalizations.of(context)
+                                    .formatMediumDate(_birthDate!),
+                          style: VeyroText.body(
+                            16,
+                            color: _birthDate == null ? v.mute : v.ink,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    const VLabel('Sex'),
+                    const SizedBox(height: 6),
+                    VChips<Sex>(
+                      options: {for (final s in Sex.values) s: s.label},
+                      selected: _sex,
+                      onChanged: (s) => setState(() => _sex = s),
+                      height: 40,
+                    ),
+                  ],
+                ),
               ),
             ],
-            selected: {_units},
-            onSelectionChanged: (s) => _changeUnits(s.first),
-          ),
-          const SizedBox(height: 16),
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            title: const Text('Date of birth'),
-            subtitle: Text(
-              _birthDate == null
-                  ? 'Select'
-                  : MaterialLocalizations.of(context)
-                        .formatMediumDate(_birthDate!),
-            ),
-            trailing: const Icon(Icons.calendar_today),
-            onTap: _pickBirthDate,
-          ),
-          DropdownButtonFormField<Sex>(
-            initialValue: _sex,
-            decoration: const InputDecoration(labelText: 'Sex'),
-            items: [
-              for (final s in Sex.values)
-                DropdownMenuItem(value: s, child: Text(s.label)),
+            right: [
+              VCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const VLabel('Activity level'),
+                    const SizedBox(height: 10),
+                    VChips<ActivityLevel>(
+                      options: {
+                        for (final a in ActivityLevel.values) a: a.label,
+                      },
+                      selected: _activityLevel,
+                      onChanged: (a) => setState(() => _activityLevel = a),
+                    ),
+                    const SizedBox(height: 14),
+                    const VLabel('Fitness goal'),
+                    const SizedBox(height: 10),
+                    VChips<FitnessGoal>(
+                      options: {for (final g in FitnessGoal.values) g: g.label},
+                      selected: _fitnessGoal,
+                      onChanged: (g) => setState(() => _fitnessGoal = g),
+                    ),
+                  ],
+                ),
+              ),
             ],
-            onChanged: (v) => setState(() => _sex = v ?? _sex),
           ),
           const SizedBox(height: 16),
-          TextFormField(
-            controller: _height,
-            decoration: InputDecoration(
-              labelText: 'Height (${_units.lengthUnit})',
-            ),
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            validator: _requiredNumber,
-          ),
-          const SizedBox(height: 16),
-          TextFormField(
-            controller: _weight,
-            decoration: InputDecoration(
-              labelText: 'Weight (${_units.weightUnit})',
-            ),
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            validator: _requiredNumber,
-          ),
-          const SizedBox(height: 16),
-          DropdownButtonFormField<ActivityLevel>(
-            initialValue: _activityLevel,
-            decoration: const InputDecoration(labelText: 'Activity level'),
-            items: [
-              for (final a in ActivityLevel.values)
-                DropdownMenuItem(value: a, child: Text(a.label)),
-            ],
-            onChanged: (v) =>
-                setState(() => _activityLevel = v ?? _activityLevel),
-          ),
-          const SizedBox(height: 16),
-          DropdownButtonFormField<FitnessGoal>(
-            initialValue: _fitnessGoal,
-            decoration: const InputDecoration(labelText: 'Goal'),
-            items: [
-              for (final g in FitnessGoal.values)
-                DropdownMenuItem(value: g, child: Text(g.label)),
-            ],
-            onChanged: (v) => setState(() => _fitnessGoal = v ?? _fitnessGoal),
-          ),
-          const SizedBox(height: 24),
-          FilledButton(
-            onPressed: widget.isSubmitting ? null : _submit,
-            child: widget.isSubmitting
-                ? const SizedBox.square(
-                    dimension: 20,
-                    child: CircularProgressIndicator.adaptive(),
-                  )
-                : Text(widget.submitLabel),
+          VBottomAction(
+            horizontalPadding: 0,
+            label: widget.submitLabel,
+            busy: widget.isSubmitting,
+            onPressed: _submit,
           ),
         ],
       ),

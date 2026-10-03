@@ -4,6 +4,8 @@ import 'package:fitness_trakcer/core/di/injection.dart';
 import 'package:fitness_trakcer/core/usecase/use_case.dart';
 import 'package:fitness_trakcer/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:fitness_trakcer/features/reminders/domain/usecases/reschedule_all_reminders.dart';
+import 'package:fitness_trakcer/features/wellness/data/datasources/wellness_local_data_source.dart';
+import 'package:fitness_trakcer/features/wellness/presentation/wellness_store.dart';
 import 'package:fitness_trakcer/features/workout/data/datasources/exercise_local_data_source.dart';
 import 'package:fitness_trakcer/features/workout/domain/usecases/sync_remote_exercises.dart';
 import 'package:fitness_trakcer/features/workout/presentation/cubit/active_workout_cubit.dart';
@@ -16,6 +18,7 @@ Future<void> bootstrap() async {
 
   await getIt<ExerciseLocalDataSource>().seedIfEmpty();
 
+  await WellnessStore.instance.init(getIt<WellnessLocalDataSource>());
   getIt<ProfileCubit>().start();
   getIt<ActiveWorkoutCubit>().start();
 

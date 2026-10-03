@@ -1,6 +1,7 @@
-import 'package:fitness_trakcer/core/layout/content_constraint.dart';
-import 'package:fitness_trakcer/core/widgets/error_view.dart';
+import 'package:fitness_trakcer/core/theme/veyro_colors.dart';
+import 'package:fitness_trakcer/core/theme/veyro_text.dart';
 import 'package:fitness_trakcer/core/widgets/loading_view.dart';
+import 'package:fitness_trakcer/core/widgets/veyro_widgets.dart';
 import 'package:fitness_trakcer/features/goals/presentation/cubit/achievements_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,43 +11,96 @@ class AchievementsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Achievements')),
-      body: BlocBuilder<AchievementsCubit, AchievementsState>(
-        builder: (context, state) {
-          if (state.status.isPending) return const LoadingView();
-          if (state.status.isFailure) {
-            return ErrorView(
-              message: state.failure?.message ?? 'Something went wrong.',
-              onRetry: context.read<AchievementsCubit>().load,
-            );
-          }
-          return ContentConstraint(
-            maxWidth: 720,
-            child: ListView(
-              children: [
-                for (final achievement in state.achievements)
-                  ListTile(
-                    enabled: achievement.isUnlocked,
-                    leading: Icon(
-                      achievement.isUnlocked
-                          ? Icons.emoji_events
-                          : Icons.lock_outline,
-                    ),
-                    title: Text(achievement.type.title),
-                    subtitle: Text(achievement.type.description),
-                    trailing: achievement.isUnlocked
-                        ? Text(
-                            MaterialLocalizations.of(context)
-                                .formatShortDate(achievement.unlockedAt!),
-                          )
-                        : null,
-                  ),
-              ],
+    final v = context.veyro;
+    return BlocBuilder<AchievementsCubit, AchievementsState>(
+      builder: (context, state) {
+        final unlocked = state.achievements.where((a) => a.isUnlocked).length;
+        final Widget? message = state.status.isPending
+            ? const LoadingView()
+            : state.status.isFailure
+            ? VEmpty(state.failure?.message ?? 'Something went wrong.')
+            : null;
+        return VSubPage(
+          title: 'Achievements',
+          maxWidth: 960,
+          children: [
+            Text(
+              '$unlocked of ${state.achievements.length} unlocked',
+              style: VeyroText.body(13, color: v.mute),
             ),
-          );
-        },
-      ),
+            ?message,
+            LayoutBuilder(
+              builder: (context, c) {
+                final cols = c.maxWidth >= 640 ? 3 : 2;
+                final w = (c.maxWidth - 10 * (cols - 1)) / cols;
+                return Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: [
+                    for (final a in state.achievements)
+                      SizedBox(
+                        width: w,
+                        child: Opacity(
+                          opacity: a.isUnlocked ? 1 : .55,
+                          child: VCard(
+                            radius: 20,
+                            padding: const EdgeInsets.all(14),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  width: 44,
+                                  height: 44,
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: a.isUnlocked ? v.acc : v.bg,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Text(
+                                    a.type.title.characters.first,
+                                    style: VeyroText.display(
+                                      22,
+                                      color: a.isUnlocked
+                                          ? VeyroColors.onAccent
+                                          : v.mute,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  a.type.title,
+                                  style: VeyroText.body(
+                                    14,
+                                    weight: FontWeight.w700,
+                                    height: 1.2,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  a.type.description,
+                                  style: VeyroText.body(
+                                    12,
+                                    color: v.mute,
+                                    height: 1.3,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                VProgressBar(
+                                  value: a.isUnlocked ? 1 : 0,
+                                  height: 5,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }

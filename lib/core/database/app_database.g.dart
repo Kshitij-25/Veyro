@@ -6689,6 +6689,1375 @@ class AppMetadataCompanion extends UpdateCompanion<AppMetadataRow> {
   }
 }
 
+class $HabitsTable extends Habits with TableInfo<$HabitsTable, HabitRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $HabitsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _tagMeta = const VerificationMeta('tag');
+  @override
+  late final GeneratedColumn<String> tag = GeneratedColumn<String>(
+    'tag',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('Custom'),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, name, tag, createdAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'habits';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<HabitRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('tag')) {
+      context.handle(
+        _tagMeta,
+        tag.isAcceptableOrUnknown(data['tag']!, _tagMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  HabitRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return HabitRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      tag: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}tag'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $HabitsTable createAlias(String alias) {
+    return $HabitsTable(attachedDatabase, alias);
+  }
+}
+
+class HabitRow extends DataClass implements Insertable<HabitRow> {
+  final String id;
+  final String name;
+  final String tag;
+  final DateTime createdAt;
+  const HabitRow({
+    required this.id,
+    required this.name,
+    required this.tag,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['name'] = Variable<String>(name);
+    map['tag'] = Variable<String>(tag);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  HabitsCompanion toCompanion(bool nullToAbsent) {
+    return HabitsCompanion(
+      id: Value(id),
+      name: Value(name),
+      tag: Value(tag),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory HabitRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return HabitRow(
+      id: serializer.fromJson<String>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      tag: serializer.fromJson<String>(json['tag']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'name': serializer.toJson<String>(name),
+      'tag': serializer.toJson<String>(tag),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  HabitRow copyWith({
+    String? id,
+    String? name,
+    String? tag,
+    DateTime? createdAt,
+  }) => HabitRow(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    tag: tag ?? this.tag,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  HabitRow copyWithCompanion(HabitsCompanion data) {
+    return HabitRow(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      tag: data.tag.present ? data.tag.value : this.tag,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HabitRow(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('tag: $tag, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name, tag, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is HabitRow &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.tag == this.tag &&
+          other.createdAt == this.createdAt);
+}
+
+class HabitsCompanion extends UpdateCompanion<HabitRow> {
+  final Value<String> id;
+  final Value<String> name;
+  final Value<String> tag;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const HabitsCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.tag = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  HabitsCompanion.insert({
+    required String id,
+    required String name,
+    this.tag = const Value.absent(),
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       name = Value(name),
+       createdAt = Value(createdAt);
+  static Insertable<HabitRow> custom({
+    Expression<String>? id,
+    Expression<String>? name,
+    Expression<String>? tag,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (tag != null) 'tag': tag,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  HabitsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? name,
+    Value<String>? tag,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return HabitsCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      tag: tag ?? this.tag,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (tag.present) {
+      map['tag'] = Variable<String>(tag.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HabitsCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('tag: $tag, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $HabitCompletionsTable extends HabitCompletions
+    with TableInfo<$HabitCompletionsTable, HabitCompletionRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $HabitCompletionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _habitIdMeta = const VerificationMeta(
+    'habitId',
+  );
+  @override
+  late final GeneratedColumn<String> habitId = GeneratedColumn<String>(
+    'habit_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES habits (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _dayMeta = const VerificationMeta('day');
+  @override
+  late final GeneratedColumn<String> day = GeneratedColumn<String>(
+    'day',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [habitId, day];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'habit_completions';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<HabitCompletionRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('habit_id')) {
+      context.handle(
+        _habitIdMeta,
+        habitId.isAcceptableOrUnknown(data['habit_id']!, _habitIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_habitIdMeta);
+    }
+    if (data.containsKey('day')) {
+      context.handle(
+        _dayMeta,
+        day.isAcceptableOrUnknown(data['day']!, _dayMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dayMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {habitId, day};
+  @override
+  HabitCompletionRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return HabitCompletionRow(
+      habitId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}habit_id'],
+      )!,
+      day: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}day'],
+      )!,
+    );
+  }
+
+  @override
+  $HabitCompletionsTable createAlias(String alias) {
+    return $HabitCompletionsTable(attachedDatabase, alias);
+  }
+}
+
+class HabitCompletionRow extends DataClass
+    implements Insertable<HabitCompletionRow> {
+  final String habitId;
+  final String day;
+  const HabitCompletionRow({required this.habitId, required this.day});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['habit_id'] = Variable<String>(habitId);
+    map['day'] = Variable<String>(day);
+    return map;
+  }
+
+  HabitCompletionsCompanion toCompanion(bool nullToAbsent) {
+    return HabitCompletionsCompanion(habitId: Value(habitId), day: Value(day));
+  }
+
+  factory HabitCompletionRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return HabitCompletionRow(
+      habitId: serializer.fromJson<String>(json['habitId']),
+      day: serializer.fromJson<String>(json['day']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'habitId': serializer.toJson<String>(habitId),
+      'day': serializer.toJson<String>(day),
+    };
+  }
+
+  HabitCompletionRow copyWith({String? habitId, String? day}) =>
+      HabitCompletionRow(
+        habitId: habitId ?? this.habitId,
+        day: day ?? this.day,
+      );
+  HabitCompletionRow copyWithCompanion(HabitCompletionsCompanion data) {
+    return HabitCompletionRow(
+      habitId: data.habitId.present ? data.habitId.value : this.habitId,
+      day: data.day.present ? data.day.value : this.day,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HabitCompletionRow(')
+          ..write('habitId: $habitId, ')
+          ..write('day: $day')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(habitId, day);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is HabitCompletionRow &&
+          other.habitId == this.habitId &&
+          other.day == this.day);
+}
+
+class HabitCompletionsCompanion extends UpdateCompanion<HabitCompletionRow> {
+  final Value<String> habitId;
+  final Value<String> day;
+  final Value<int> rowid;
+  const HabitCompletionsCompanion({
+    this.habitId = const Value.absent(),
+    this.day = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  HabitCompletionsCompanion.insert({
+    required String habitId,
+    required String day,
+    this.rowid = const Value.absent(),
+  }) : habitId = Value(habitId),
+       day = Value(day);
+  static Insertable<HabitCompletionRow> custom({
+    Expression<String>? habitId,
+    Expression<String>? day,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (habitId != null) 'habit_id': habitId,
+      if (day != null) 'day': day,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  HabitCompletionsCompanion copyWith({
+    Value<String>? habitId,
+    Value<String>? day,
+    Value<int>? rowid,
+  }) {
+    return HabitCompletionsCompanion(
+      habitId: habitId ?? this.habitId,
+      day: day ?? this.day,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (habitId.present) {
+      map['habit_id'] = Variable<String>(habitId.value);
+    }
+    if (day.present) {
+      map['day'] = Variable<String>(day.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HabitCompletionsCompanion(')
+          ..write('habitId: $habitId, ')
+          ..write('day: $day, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $FoodLogEntriesTable extends FoodLogEntries
+    with TableInfo<$FoodLogEntriesTable, FoodLogRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $FoodLogEntriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _dayMeta = const VerificationMeta('day');
+  @override
+  late final GeneratedColumn<String> day = GeneratedColumn<String>(
+    'day',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _mealMeta = const VerificationMeta('meal');
+  @override
+  late final GeneratedColumn<String> meal = GeneratedColumn<String>(
+    'meal',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _servingMeta = const VerificationMeta(
+    'serving',
+  );
+  @override
+  late final GeneratedColumn<String> serving = GeneratedColumn<String>(
+    'serving',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _kcalMeta = const VerificationMeta('kcal');
+  @override
+  late final GeneratedColumn<double> kcal = GeneratedColumn<double>(
+    'kcal',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _proteinMeta = const VerificationMeta(
+    'protein',
+  );
+  @override
+  late final GeneratedColumn<double> protein = GeneratedColumn<double>(
+    'protein',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _carbsMeta = const VerificationMeta('carbs');
+  @override
+  late final GeneratedColumn<double> carbs = GeneratedColumn<double>(
+    'carbs',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _fatMeta = const VerificationMeta('fat');
+  @override
+  late final GeneratedColumn<double> fat = GeneratedColumn<double>(
+    'fat',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _quantityMeta = const VerificationMeta(
+    'quantity',
+  );
+  @override
+  late final GeneratedColumn<double> quantity = GeneratedColumn<double>(
+    'quantity',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    day,
+    meal,
+    name,
+    serving,
+    kcal,
+    protein,
+    carbs,
+    fat,
+    quantity,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'food_log_entries';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<FoodLogRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('day')) {
+      context.handle(
+        _dayMeta,
+        day.isAcceptableOrUnknown(data['day']!, _dayMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dayMeta);
+    }
+    if (data.containsKey('meal')) {
+      context.handle(
+        _mealMeta,
+        meal.isAcceptableOrUnknown(data['meal']!, _mealMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_mealMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('serving')) {
+      context.handle(
+        _servingMeta,
+        serving.isAcceptableOrUnknown(data['serving']!, _servingMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_servingMeta);
+    }
+    if (data.containsKey('kcal')) {
+      context.handle(
+        _kcalMeta,
+        kcal.isAcceptableOrUnknown(data['kcal']!, _kcalMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_kcalMeta);
+    }
+    if (data.containsKey('protein')) {
+      context.handle(
+        _proteinMeta,
+        protein.isAcceptableOrUnknown(data['protein']!, _proteinMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_proteinMeta);
+    }
+    if (data.containsKey('carbs')) {
+      context.handle(
+        _carbsMeta,
+        carbs.isAcceptableOrUnknown(data['carbs']!, _carbsMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_carbsMeta);
+    }
+    if (data.containsKey('fat')) {
+      context.handle(
+        _fatMeta,
+        fat.isAcceptableOrUnknown(data['fat']!, _fatMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_fatMeta);
+    }
+    if (data.containsKey('quantity')) {
+      context.handle(
+        _quantityMeta,
+        quantity.isAcceptableOrUnknown(data['quantity']!, _quantityMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  FoodLogRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return FoodLogRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      day: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}day'],
+      )!,
+      meal: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}meal'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      serving: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}serving'],
+      )!,
+      kcal: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}kcal'],
+      )!,
+      protein: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}protein'],
+      )!,
+      carbs: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}carbs'],
+      )!,
+      fat: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}fat'],
+      )!,
+      quantity: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}quantity'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $FoodLogEntriesTable createAlias(String alias) {
+    return $FoodLogEntriesTable(attachedDatabase, alias);
+  }
+}
+
+class FoodLogRow extends DataClass implements Insertable<FoodLogRow> {
+  final String id;
+
+  /// Local day, `yyyy-MM-dd`.
+  final String day;
+  final String meal;
+  final String name;
+  final String serving;
+
+  /// Values for ONE serving; multiply by [quantity].
+  final double kcal;
+  final double protein;
+  final double carbs;
+  final double fat;
+  final double quantity;
+  final DateTime createdAt;
+  const FoodLogRow({
+    required this.id,
+    required this.day,
+    required this.meal,
+    required this.name,
+    required this.serving,
+    required this.kcal,
+    required this.protein,
+    required this.carbs,
+    required this.fat,
+    required this.quantity,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['day'] = Variable<String>(day);
+    map['meal'] = Variable<String>(meal);
+    map['name'] = Variable<String>(name);
+    map['serving'] = Variable<String>(serving);
+    map['kcal'] = Variable<double>(kcal);
+    map['protein'] = Variable<double>(protein);
+    map['carbs'] = Variable<double>(carbs);
+    map['fat'] = Variable<double>(fat);
+    map['quantity'] = Variable<double>(quantity);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  FoodLogEntriesCompanion toCompanion(bool nullToAbsent) {
+    return FoodLogEntriesCompanion(
+      id: Value(id),
+      day: Value(day),
+      meal: Value(meal),
+      name: Value(name),
+      serving: Value(serving),
+      kcal: Value(kcal),
+      protein: Value(protein),
+      carbs: Value(carbs),
+      fat: Value(fat),
+      quantity: Value(quantity),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory FoodLogRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return FoodLogRow(
+      id: serializer.fromJson<String>(json['id']),
+      day: serializer.fromJson<String>(json['day']),
+      meal: serializer.fromJson<String>(json['meal']),
+      name: serializer.fromJson<String>(json['name']),
+      serving: serializer.fromJson<String>(json['serving']),
+      kcal: serializer.fromJson<double>(json['kcal']),
+      protein: serializer.fromJson<double>(json['protein']),
+      carbs: serializer.fromJson<double>(json['carbs']),
+      fat: serializer.fromJson<double>(json['fat']),
+      quantity: serializer.fromJson<double>(json['quantity']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'day': serializer.toJson<String>(day),
+      'meal': serializer.toJson<String>(meal),
+      'name': serializer.toJson<String>(name),
+      'serving': serializer.toJson<String>(serving),
+      'kcal': serializer.toJson<double>(kcal),
+      'protein': serializer.toJson<double>(protein),
+      'carbs': serializer.toJson<double>(carbs),
+      'fat': serializer.toJson<double>(fat),
+      'quantity': serializer.toJson<double>(quantity),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  FoodLogRow copyWith({
+    String? id,
+    String? day,
+    String? meal,
+    String? name,
+    String? serving,
+    double? kcal,
+    double? protein,
+    double? carbs,
+    double? fat,
+    double? quantity,
+    DateTime? createdAt,
+  }) => FoodLogRow(
+    id: id ?? this.id,
+    day: day ?? this.day,
+    meal: meal ?? this.meal,
+    name: name ?? this.name,
+    serving: serving ?? this.serving,
+    kcal: kcal ?? this.kcal,
+    protein: protein ?? this.protein,
+    carbs: carbs ?? this.carbs,
+    fat: fat ?? this.fat,
+    quantity: quantity ?? this.quantity,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  FoodLogRow copyWithCompanion(FoodLogEntriesCompanion data) {
+    return FoodLogRow(
+      id: data.id.present ? data.id.value : this.id,
+      day: data.day.present ? data.day.value : this.day,
+      meal: data.meal.present ? data.meal.value : this.meal,
+      name: data.name.present ? data.name.value : this.name,
+      serving: data.serving.present ? data.serving.value : this.serving,
+      kcal: data.kcal.present ? data.kcal.value : this.kcal,
+      protein: data.protein.present ? data.protein.value : this.protein,
+      carbs: data.carbs.present ? data.carbs.value : this.carbs,
+      fat: data.fat.present ? data.fat.value : this.fat,
+      quantity: data.quantity.present ? data.quantity.value : this.quantity,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FoodLogRow(')
+          ..write('id: $id, ')
+          ..write('day: $day, ')
+          ..write('meal: $meal, ')
+          ..write('name: $name, ')
+          ..write('serving: $serving, ')
+          ..write('kcal: $kcal, ')
+          ..write('protein: $protein, ')
+          ..write('carbs: $carbs, ')
+          ..write('fat: $fat, ')
+          ..write('quantity: $quantity, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    day,
+    meal,
+    name,
+    serving,
+    kcal,
+    protein,
+    carbs,
+    fat,
+    quantity,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is FoodLogRow &&
+          other.id == this.id &&
+          other.day == this.day &&
+          other.meal == this.meal &&
+          other.name == this.name &&
+          other.serving == this.serving &&
+          other.kcal == this.kcal &&
+          other.protein == this.protein &&
+          other.carbs == this.carbs &&
+          other.fat == this.fat &&
+          other.quantity == this.quantity &&
+          other.createdAt == this.createdAt);
+}
+
+class FoodLogEntriesCompanion extends UpdateCompanion<FoodLogRow> {
+  final Value<String> id;
+  final Value<String> day;
+  final Value<String> meal;
+  final Value<String> name;
+  final Value<String> serving;
+  final Value<double> kcal;
+  final Value<double> protein;
+  final Value<double> carbs;
+  final Value<double> fat;
+  final Value<double> quantity;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const FoodLogEntriesCompanion({
+    this.id = const Value.absent(),
+    this.day = const Value.absent(),
+    this.meal = const Value.absent(),
+    this.name = const Value.absent(),
+    this.serving = const Value.absent(),
+    this.kcal = const Value.absent(),
+    this.protein = const Value.absent(),
+    this.carbs = const Value.absent(),
+    this.fat = const Value.absent(),
+    this.quantity = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  FoodLogEntriesCompanion.insert({
+    required String id,
+    required String day,
+    required String meal,
+    required String name,
+    required String serving,
+    required double kcal,
+    required double protein,
+    required double carbs,
+    required double fat,
+    this.quantity = const Value.absent(),
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       day = Value(day),
+       meal = Value(meal),
+       name = Value(name),
+       serving = Value(serving),
+       kcal = Value(kcal),
+       protein = Value(protein),
+       carbs = Value(carbs),
+       fat = Value(fat),
+       createdAt = Value(createdAt);
+  static Insertable<FoodLogRow> custom({
+    Expression<String>? id,
+    Expression<String>? day,
+    Expression<String>? meal,
+    Expression<String>? name,
+    Expression<String>? serving,
+    Expression<double>? kcal,
+    Expression<double>? protein,
+    Expression<double>? carbs,
+    Expression<double>? fat,
+    Expression<double>? quantity,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (day != null) 'day': day,
+      if (meal != null) 'meal': meal,
+      if (name != null) 'name': name,
+      if (serving != null) 'serving': serving,
+      if (kcal != null) 'kcal': kcal,
+      if (protein != null) 'protein': protein,
+      if (carbs != null) 'carbs': carbs,
+      if (fat != null) 'fat': fat,
+      if (quantity != null) 'quantity': quantity,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  FoodLogEntriesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? day,
+    Value<String>? meal,
+    Value<String>? name,
+    Value<String>? serving,
+    Value<double>? kcal,
+    Value<double>? protein,
+    Value<double>? carbs,
+    Value<double>? fat,
+    Value<double>? quantity,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return FoodLogEntriesCompanion(
+      id: id ?? this.id,
+      day: day ?? this.day,
+      meal: meal ?? this.meal,
+      name: name ?? this.name,
+      serving: serving ?? this.serving,
+      kcal: kcal ?? this.kcal,
+      protein: protein ?? this.protein,
+      carbs: carbs ?? this.carbs,
+      fat: fat ?? this.fat,
+      quantity: quantity ?? this.quantity,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (day.present) {
+      map['day'] = Variable<String>(day.value);
+    }
+    if (meal.present) {
+      map['meal'] = Variable<String>(meal.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (serving.present) {
+      map['serving'] = Variable<String>(serving.value);
+    }
+    if (kcal.present) {
+      map['kcal'] = Variable<double>(kcal.value);
+    }
+    if (protein.present) {
+      map['protein'] = Variable<double>(protein.value);
+    }
+    if (carbs.present) {
+      map['carbs'] = Variable<double>(carbs.value);
+    }
+    if (fat.present) {
+      map['fat'] = Variable<double>(fat.value);
+    }
+    if (quantity.present) {
+      map['quantity'] = Variable<double>(quantity.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FoodLogEntriesCompanion(')
+          ..write('id: $id, ')
+          ..write('day: $day, ')
+          ..write('meal: $meal, ')
+          ..write('name: $name, ')
+          ..write('serving: $serving, ')
+          ..write('kcal: $kcal, ')
+          ..write('protein: $protein, ')
+          ..write('carbs: $carbs, ')
+          ..write('fat: $fat, ')
+          ..write('quantity: $quantity, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $WaterLogsTable extends WaterLogs
+    with TableInfo<$WaterLogsTable, WaterLogRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $WaterLogsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _dayMeta = const VerificationMeta('day');
+  @override
+  late final GeneratedColumn<String> day = GeneratedColumn<String>(
+    'day',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _mlMeta = const VerificationMeta('ml');
+  @override
+  late final GeneratedColumn<int> ml = GeneratedColumn<int>(
+    'ml',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [day, ml];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'water_logs';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<WaterLogRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('day')) {
+      context.handle(
+        _dayMeta,
+        day.isAcceptableOrUnknown(data['day']!, _dayMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dayMeta);
+    }
+    if (data.containsKey('ml')) {
+      context.handle(_mlMeta, ml.isAcceptableOrUnknown(data['ml']!, _mlMeta));
+    } else if (isInserting) {
+      context.missing(_mlMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {day};
+  @override
+  WaterLogRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return WaterLogRow(
+      day: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}day'],
+      )!,
+      ml: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}ml'],
+      )!,
+    );
+  }
+
+  @override
+  $WaterLogsTable createAlias(String alias) {
+    return $WaterLogsTable(attachedDatabase, alias);
+  }
+}
+
+class WaterLogRow extends DataClass implements Insertable<WaterLogRow> {
+  final String day;
+  final int ml;
+  const WaterLogRow({required this.day, required this.ml});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['day'] = Variable<String>(day);
+    map['ml'] = Variable<int>(ml);
+    return map;
+  }
+
+  WaterLogsCompanion toCompanion(bool nullToAbsent) {
+    return WaterLogsCompanion(day: Value(day), ml: Value(ml));
+  }
+
+  factory WaterLogRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return WaterLogRow(
+      day: serializer.fromJson<String>(json['day']),
+      ml: serializer.fromJson<int>(json['ml']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'day': serializer.toJson<String>(day),
+      'ml': serializer.toJson<int>(ml),
+    };
+  }
+
+  WaterLogRow copyWith({String? day, int? ml}) =>
+      WaterLogRow(day: day ?? this.day, ml: ml ?? this.ml);
+  WaterLogRow copyWithCompanion(WaterLogsCompanion data) {
+    return WaterLogRow(
+      day: data.day.present ? data.day.value : this.day,
+      ml: data.ml.present ? data.ml.value : this.ml,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WaterLogRow(')
+          ..write('day: $day, ')
+          ..write('ml: $ml')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(day, ml);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is WaterLogRow && other.day == this.day && other.ml == this.ml);
+}
+
+class WaterLogsCompanion extends UpdateCompanion<WaterLogRow> {
+  final Value<String> day;
+  final Value<int> ml;
+  final Value<int> rowid;
+  const WaterLogsCompanion({
+    this.day = const Value.absent(),
+    this.ml = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  WaterLogsCompanion.insert({
+    required String day,
+    required int ml,
+    this.rowid = const Value.absent(),
+  }) : day = Value(day),
+       ml = Value(ml);
+  static Insertable<WaterLogRow> custom({
+    Expression<String>? day,
+    Expression<int>? ml,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (day != null) 'day': day,
+      if (ml != null) 'ml': ml,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  WaterLogsCompanion copyWith({
+    Value<String>? day,
+    Value<int>? ml,
+    Value<int>? rowid,
+  }) {
+    return WaterLogsCompanion(
+      day: day ?? this.day,
+      ml: ml ?? this.ml,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (day.present) {
+      map['day'] = Variable<String>(day.value);
+    }
+    if (ml.present) {
+      map['ml'] = Variable<int>(ml.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WaterLogsCompanion(')
+          ..write('day: $day, ')
+          ..write('ml: $ml, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -6716,6 +8085,12 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $TrackedActivitiesTable trackedActivities =
       $TrackedActivitiesTable(this);
   late final $AppMetadataTable appMetadata = $AppMetadataTable(this);
+  late final $HabitsTable habits = $HabitsTable(this);
+  late final $HabitCompletionsTable habitCompletions = $HabitCompletionsTable(
+    this,
+  );
+  late final $FoodLogEntriesTable foodLogEntries = $FoodLogEntriesTable(this);
+  late final $WaterLogsTable waterLogs = $WaterLogsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -6735,6 +8110,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     reminders,
     trackedActivities,
     appMetadata,
+    habits,
+    habitCompletions,
+    foodLogEntries,
+    waterLogs,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -6758,6 +8137,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('routine_exercises', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'habits',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('habit_completions', kind: UpdateKind.delete)],
     ),
   ]);
 }
@@ -11337,6 +12723,1025 @@ typedef $$AppMetadataTableProcessedTableManager =
       AppMetadataRow,
       PrefetchHooks Function()
     >;
+typedef $$HabitsTableCreateCompanionBuilder = HabitsCompanion Function({
+  required String id,
+  required String name,
+  Value<String> tag,
+  required DateTime createdAt,
+  Value<int> rowid,
+});
+typedef $$HabitsTableUpdateCompanionBuilder = HabitsCompanion Function({
+  Value<String> id,
+  Value<String> name,
+  Value<String> tag,
+  Value<DateTime> createdAt,
+  Value<int> rowid,
+});
+
+final class $$HabitsTableReferences
+    extends BaseReferences<_$AppDatabase, $HabitsTable, HabitRow> {
+  $$HabitsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$HabitCompletionsTable, List<HabitCompletionRow>>
+  _habitCompletionsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.habitCompletions,
+    aliasName: 'habits__id__habit_completions__habit_id',
+  );
+
+  $$HabitCompletionsTableProcessedTableManager get habitCompletionsRefs {
+    final manager = $$HabitCompletionsTableTableManager(
+      $_db,
+      $_db.habitCompletions,
+    ).filter((f) => f.habitId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _habitCompletionsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$HabitsTableFilterComposer
+    extends Composer<_$AppDatabase, $HabitsTable> {
+  $$HabitsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get tag => $composableBuilder(
+    column: $table.tag,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> habitCompletionsRefs(
+    Expression<bool> Function($$HabitCompletionsTableFilterComposer f) f,
+  ) {
+    final $$HabitCompletionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.habitCompletions,
+      getReferencedColumn: (t) => t.habitId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HabitCompletionsTableFilterComposer(
+            $db: $db,
+            $table: $db.habitCompletions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$HabitsTableOrderingComposer
+    extends Composer<_$AppDatabase, $HabitsTable> {
+  $$HabitsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get tag => $composableBuilder(
+    column: $table.tag,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$HabitsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $HabitsTable> {
+  $$HabitsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get tag =>
+      $composableBuilder(column: $table.tag, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  Expression<T> habitCompletionsRefs<T extends Object>(
+    Expression<T> Function($$HabitCompletionsTableAnnotationComposer a) f,
+  ) {
+    final $$HabitCompletionsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.habitCompletions,
+      getReferencedColumn: (t) => t.habitId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HabitCompletionsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.habitCompletions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$HabitsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $HabitsTable,
+          HabitRow,
+          $$HabitsTableFilterComposer,
+          $$HabitsTableOrderingComposer,
+          $$HabitsTableAnnotationComposer,
+          $$HabitsTableCreateCompanionBuilder,
+          $$HabitsTableUpdateCompanionBuilder,
+          (HabitRow, $$HabitsTableReferences),
+          HabitRow,
+          PrefetchHooks Function({bool habitCompletionsRefs})
+        > {
+  $$HabitsTableTableManager(_$AppDatabase db, $HabitsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$HabitsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$HabitsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$HabitsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> tag = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => HabitsCompanion(
+                id: id,
+                name: name,
+                tag: tag,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String name,
+                Value<String> tag = const Value.absent(),
+                required DateTime createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => HabitsCompanion.insert(
+                id: id,
+                name: name,
+                tag: tag,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$HabitsTable, HabitRow>(table),
+                  $$HabitsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({habitCompletionsRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [
+                if (habitCompletionsRefs) db.habitCompletions,
+              ],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (habitCompletionsRefs)
+                    await $_getPrefetchedData<
+                      HabitRow,
+                      $HabitsTable,
+                      HabitCompletionRow
+                    >(
+                      currentTable: table,
+                      referencedTable: $$HabitsTableReferences
+                          ._habitCompletionsRefsTable(db),
+                      managerFromTypedResult: (p0) => $$HabitsTableReferences(
+                        db,
+                        table,
+                        p0,
+                      ).habitCompletionsRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.habitId == item.id),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$HabitsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $HabitsTable,
+      HabitRow,
+      $$HabitsTableFilterComposer,
+      $$HabitsTableOrderingComposer,
+      $$HabitsTableAnnotationComposer,
+      $$HabitsTableCreateCompanionBuilder,
+      $$HabitsTableUpdateCompanionBuilder,
+      (HabitRow, $$HabitsTableReferences),
+      HabitRow,
+      PrefetchHooks Function({bool habitCompletionsRefs})
+    >;
+typedef $$HabitCompletionsTableCreateCompanionBuilder =
+    HabitCompletionsCompanion Function({
+      required String habitId,
+      required String day,
+      Value<int> rowid,
+    });
+typedef $$HabitCompletionsTableUpdateCompanionBuilder =
+    HabitCompletionsCompanion Function({
+      Value<String> habitId,
+      Value<String> day,
+      Value<int> rowid,
+    });
+
+final class $$HabitCompletionsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $HabitCompletionsTable,
+          HabitCompletionRow
+        > {
+  $$HabitCompletionsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $HabitsTable _habitIdTable(_$AppDatabase db) =>
+      db.habits.createAlias('habit_completions__habit_id__habits__id');
+
+  $$HabitsTableProcessedTableManager get habitId {
+    final $_column = $_itemColumn<String>('habit_id')!;
+
+    final manager = $$HabitsTableTableManager(
+      $_db,
+      $_db.habits,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_habitIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$HabitCompletionsTableFilterComposer
+    extends Composer<_$AppDatabase, $HabitCompletionsTable> {
+  $$HabitCompletionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get day => $composableBuilder(
+    column: $table.day,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$HabitsTableFilterComposer get habitId {
+    final $$HabitsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.habitId,
+      referencedTable: $db.habits,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HabitsTableFilterComposer(
+            $db: $db,
+            $table: $db.habits,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$HabitCompletionsTableOrderingComposer
+    extends Composer<_$AppDatabase, $HabitCompletionsTable> {
+  $$HabitCompletionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get day => $composableBuilder(
+    column: $table.day,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$HabitsTableOrderingComposer get habitId {
+    final $$HabitsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.habitId,
+      referencedTable: $db.habits,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HabitsTableOrderingComposer(
+            $db: $db,
+            $table: $db.habits,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$HabitCompletionsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $HabitCompletionsTable> {
+  $$HabitCompletionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get day =>
+      $composableBuilder(column: $table.day, builder: (column) => column);
+
+  $$HabitsTableAnnotationComposer get habitId {
+    final $$HabitsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.habitId,
+      referencedTable: $db.habits,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HabitsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.habits,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$HabitCompletionsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $HabitCompletionsTable,
+          HabitCompletionRow,
+          $$HabitCompletionsTableFilterComposer,
+          $$HabitCompletionsTableOrderingComposer,
+          $$HabitCompletionsTableAnnotationComposer,
+          $$HabitCompletionsTableCreateCompanionBuilder,
+          $$HabitCompletionsTableUpdateCompanionBuilder,
+          (HabitCompletionRow, $$HabitCompletionsTableReferences),
+          HabitCompletionRow,
+          PrefetchHooks Function({bool habitId})
+        > {
+  $$HabitCompletionsTableTableManager(
+    _$AppDatabase db,
+    $HabitCompletionsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$HabitCompletionsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$HabitCompletionsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$HabitCompletionsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> habitId = const Value.absent(),
+                Value<String> day = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => HabitCompletionsCompanion(
+                habitId: habitId,
+                day: day,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String habitId,
+                required String day,
+                Value<int> rowid = const Value.absent(),
+              }) => HabitCompletionsCompanion.insert(
+                habitId: habitId,
+                day: day,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$HabitCompletionsTable, HabitCompletionRow>(
+                    table,
+                  ),
+                  $$HabitCompletionsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({habitId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (habitId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.habitId,
+                        referencedTable: $$HabitCompletionsTableReferences
+                            ._habitIdTable(db),
+                        referencedColumn: $$HabitCompletionsTableReferences
+                            ._habitIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$HabitCompletionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $HabitCompletionsTable,
+      HabitCompletionRow,
+      $$HabitCompletionsTableFilterComposer,
+      $$HabitCompletionsTableOrderingComposer,
+      $$HabitCompletionsTableAnnotationComposer,
+      $$HabitCompletionsTableCreateCompanionBuilder,
+      $$HabitCompletionsTableUpdateCompanionBuilder,
+      (HabitCompletionRow, $$HabitCompletionsTableReferences),
+      HabitCompletionRow,
+      PrefetchHooks Function({bool habitId})
+    >;
+typedef $$FoodLogEntriesTableCreateCompanionBuilder =
+    FoodLogEntriesCompanion Function({
+      required String id,
+      required String day,
+      required String meal,
+      required String name,
+      required String serving,
+      required double kcal,
+      required double protein,
+      required double carbs,
+      required double fat,
+      Value<double> quantity,
+      required DateTime createdAt,
+      Value<int> rowid,
+    });
+typedef $$FoodLogEntriesTableUpdateCompanionBuilder =
+    FoodLogEntriesCompanion Function({
+      Value<String> id,
+      Value<String> day,
+      Value<String> meal,
+      Value<String> name,
+      Value<String> serving,
+      Value<double> kcal,
+      Value<double> protein,
+      Value<double> carbs,
+      Value<double> fat,
+      Value<double> quantity,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+class $$FoodLogEntriesTableFilterComposer
+    extends Composer<_$AppDatabase, $FoodLogEntriesTable> {
+  $$FoodLogEntriesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get day => $composableBuilder(
+    column: $table.day,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get meal => $composableBuilder(
+    column: $table.meal,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get serving => $composableBuilder(
+    column: $table.serving,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get kcal => $composableBuilder(
+    column: $table.kcal,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get protein => $composableBuilder(
+    column: $table.protein,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get carbs => $composableBuilder(
+    column: $table.carbs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get fat => $composableBuilder(
+    column: $table.fat,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get quantity => $composableBuilder(
+    column: $table.quantity,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$FoodLogEntriesTableOrderingComposer
+    extends Composer<_$AppDatabase, $FoodLogEntriesTable> {
+  $$FoodLogEntriesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get day => $composableBuilder(
+    column: $table.day,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get meal => $composableBuilder(
+    column: $table.meal,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get serving => $composableBuilder(
+    column: $table.serving,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get kcal => $composableBuilder(
+    column: $table.kcal,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get protein => $composableBuilder(
+    column: $table.protein,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get carbs => $composableBuilder(
+    column: $table.carbs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get fat => $composableBuilder(
+    column: $table.fat,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get quantity => $composableBuilder(
+    column: $table.quantity,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$FoodLogEntriesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $FoodLogEntriesTable> {
+  $$FoodLogEntriesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get day =>
+      $composableBuilder(column: $table.day, builder: (column) => column);
+
+  GeneratedColumn<String> get meal =>
+      $composableBuilder(column: $table.meal, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get serving =>
+      $composableBuilder(column: $table.serving, builder: (column) => column);
+
+  GeneratedColumn<double> get kcal =>
+      $composableBuilder(column: $table.kcal, builder: (column) => column);
+
+  GeneratedColumn<double> get protein =>
+      $composableBuilder(column: $table.protein, builder: (column) => column);
+
+  GeneratedColumn<double> get carbs =>
+      $composableBuilder(column: $table.carbs, builder: (column) => column);
+
+  GeneratedColumn<double> get fat =>
+      $composableBuilder(column: $table.fat, builder: (column) => column);
+
+  GeneratedColumn<double> get quantity =>
+      $composableBuilder(column: $table.quantity, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$FoodLogEntriesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $FoodLogEntriesTable,
+          FoodLogRow,
+          $$FoodLogEntriesTableFilterComposer,
+          $$FoodLogEntriesTableOrderingComposer,
+          $$FoodLogEntriesTableAnnotationComposer,
+          $$FoodLogEntriesTableCreateCompanionBuilder,
+          $$FoodLogEntriesTableUpdateCompanionBuilder,
+          (
+            FoodLogRow,
+            BaseReferences<_$AppDatabase, $FoodLogEntriesTable, FoodLogRow>,
+          ),
+          FoodLogRow,
+          PrefetchHooks Function()
+        > {
+  $$FoodLogEntriesTableTableManager(
+    _$AppDatabase db,
+    $FoodLogEntriesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$FoodLogEntriesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$FoodLogEntriesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$FoodLogEntriesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> day = const Value.absent(),
+                Value<String> meal = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> serving = const Value.absent(),
+                Value<double> kcal = const Value.absent(),
+                Value<double> protein = const Value.absent(),
+                Value<double> carbs = const Value.absent(),
+                Value<double> fat = const Value.absent(),
+                Value<double> quantity = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => FoodLogEntriesCompanion(
+                id: id,
+                day: day,
+                meal: meal,
+                name: name,
+                serving: serving,
+                kcal: kcal,
+                protein: protein,
+                carbs: carbs,
+                fat: fat,
+                quantity: quantity,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String day,
+                required String meal,
+                required String name,
+                required String serving,
+                required double kcal,
+                required double protein,
+                required double carbs,
+                required double fat,
+                Value<double> quantity = const Value.absent(),
+                required DateTime createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => FoodLogEntriesCompanion.insert(
+                id: id,
+                day: day,
+                meal: meal,
+                name: name,
+                serving: serving,
+                kcal: kcal,
+                protein: protein,
+                carbs: carbs,
+                fat: fat,
+                quantity: quantity,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$FoodLogEntriesTable, FoodLogRow>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $FoodLogEntriesTable,
+                    FoodLogRow
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$FoodLogEntriesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $FoodLogEntriesTable,
+      FoodLogRow,
+      $$FoodLogEntriesTableFilterComposer,
+      $$FoodLogEntriesTableOrderingComposer,
+      $$FoodLogEntriesTableAnnotationComposer,
+      $$FoodLogEntriesTableCreateCompanionBuilder,
+      $$FoodLogEntriesTableUpdateCompanionBuilder,
+      (
+        FoodLogRow,
+        BaseReferences<_$AppDatabase, $FoodLogEntriesTable, FoodLogRow>,
+      ),
+      FoodLogRow,
+      PrefetchHooks Function()
+    >;
+typedef $$WaterLogsTableCreateCompanionBuilder = WaterLogsCompanion Function({
+  required String day,
+  required int ml,
+  Value<int> rowid,
+});
+typedef $$WaterLogsTableUpdateCompanionBuilder = WaterLogsCompanion Function({
+  Value<String> day,
+  Value<int> ml,
+  Value<int> rowid,
+});
+
+class $$WaterLogsTableFilterComposer
+    extends Composer<_$AppDatabase, $WaterLogsTable> {
+  $$WaterLogsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get day => $composableBuilder(
+    column: $table.day,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get ml => $composableBuilder(
+    column: $table.ml,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$WaterLogsTableOrderingComposer
+    extends Composer<_$AppDatabase, $WaterLogsTable> {
+  $$WaterLogsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get day => $composableBuilder(
+    column: $table.day,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get ml => $composableBuilder(
+    column: $table.ml,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$WaterLogsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $WaterLogsTable> {
+  $$WaterLogsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get day =>
+      $composableBuilder(column: $table.day, builder: (column) => column);
+
+  GeneratedColumn<int> get ml =>
+      $composableBuilder(column: $table.ml, builder: (column) => column);
+}
+
+class $$WaterLogsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $WaterLogsTable,
+          WaterLogRow,
+          $$WaterLogsTableFilterComposer,
+          $$WaterLogsTableOrderingComposer,
+          $$WaterLogsTableAnnotationComposer,
+          $$WaterLogsTableCreateCompanionBuilder,
+          $$WaterLogsTableUpdateCompanionBuilder,
+          (
+            WaterLogRow,
+            BaseReferences<_$AppDatabase, $WaterLogsTable, WaterLogRow>,
+          ),
+          WaterLogRow,
+          PrefetchHooks Function()
+        > {
+  $$WaterLogsTableTableManager(_$AppDatabase db, $WaterLogsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$WaterLogsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$WaterLogsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$WaterLogsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> day = const Value.absent(),
+            Value<int> ml = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) => WaterLogsCompanion(day: day, ml: ml, rowid: rowid),
+          createCompanionCallback: ({
+            required String day,
+            required int ml,
+            Value<int> rowid = const Value.absent(),
+          }) => WaterLogsCompanion.insert(day: day, ml: ml, rowid: rowid),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$WaterLogsTable, WaterLogRow>(table),
+                  BaseReferences<_$AppDatabase, $WaterLogsTable, WaterLogRow>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$WaterLogsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $WaterLogsTable,
+      WaterLogRow,
+      $$WaterLogsTableFilterComposer,
+      $$WaterLogsTableOrderingComposer,
+      $$WaterLogsTableAnnotationComposer,
+      $$WaterLogsTableCreateCompanionBuilder,
+      $$WaterLogsTableUpdateCompanionBuilder,
+      (
+        WaterLogRow,
+        BaseReferences<_$AppDatabase, $WaterLogsTable, WaterLogRow>,
+      ),
+      WaterLogRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -11369,4 +13774,12 @@ class $AppDatabaseManager {
       $$TrackedActivitiesTableTableManager(_db, _db.trackedActivities);
   $$AppMetadataTableTableManager get appMetadata =>
       $$AppMetadataTableTableManager(_db, _db.appMetadata);
+  $$HabitsTableTableManager get habits =>
+      $$HabitsTableTableManager(_db, _db.habits);
+  $$HabitCompletionsTableTableManager get habitCompletions =>
+      $$HabitCompletionsTableTableManager(_db, _db.habitCompletions);
+  $$FoodLogEntriesTableTableManager get foodLogEntries =>
+      $$FoodLogEntriesTableTableManager(_db, _db.foodLogEntries);
+  $$WaterLogsTableTableManager get waterLogs =>
+      $$WaterLogsTableTableManager(_db, _db.waterLogs);
 }

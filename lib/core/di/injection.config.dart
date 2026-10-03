@@ -137,6 +137,12 @@ import 'package:fitness_trakcer/features/profile/presentation/cubit/onboarding_c
     as _i852;
 import 'package:fitness_trakcer/features/profile/presentation/cubit/profile_cubit.dart'
     as _i945;
+import 'package:fitness_trakcer/features/recovery/data/repositories/recovery_repository_impl.dart'
+    as _i729;
+import 'package:fitness_trakcer/features/recovery/domain/repositories/recovery_repository.dart'
+    as _i683;
+import 'package:fitness_trakcer/features/recovery/domain/usecases/get_recovery_snapshot.dart'
+    as _i551;
 import 'package:fitness_trakcer/features/reminders/data/datasources/reminder_local_data_source.dart'
     as _i30;
 import 'package:fitness_trakcer/features/reminders/data/repositories/reminder_repository_impl.dart'
@@ -159,6 +165,8 @@ import 'package:fitness_trakcer/features/reminders/domain/usecases/watch_reminde
     as _i456;
 import 'package:fitness_trakcer/features/reminders/presentation/cubit/reminders_cubit.dart'
     as _i823;
+import 'package:fitness_trakcer/features/report/domain/usecases/get_weekly_report.dart'
+    as _i817;
 import 'package:fitness_trakcer/features/routines/data/datasources/routine_local_data_source.dart'
     as _i1029;
 import 'package:fitness_trakcer/features/routines/data/repositories/routine_repository_impl.dart'
@@ -181,6 +189,8 @@ import 'package:fitness_trakcer/features/routines/presentation/cubit/routine_edi
     as _i850;
 import 'package:fitness_trakcer/features/routines/presentation/cubit/routines_cubit.dart'
     as _i18;
+import 'package:fitness_trakcer/features/wellness/data/datasources/wellness_local_data_source.dart'
+    as _i695;
 import 'package:fitness_trakcer/features/workout/data/datasources/exercise_local_data_source.dart'
     as _i613;
 import 'package:fitness_trakcer/features/workout/data/datasources/metadata_local_data_source.dart'
@@ -218,7 +228,7 @@ import 'package:fitness_trakcer/features/workout/domain/usecases/get_workout.dar
 import 'package:fitness_trakcer/features/workout/domain/usecases/start_workout.dart'
     as _i17;
 import 'package:fitness_trakcer/features/workout/domain/usecases/sync_remote_exercises.dart'
-    as _i695;
+    as _i696;
 import 'package:fitness_trakcer/features/workout/domain/usecases/watch_active_workout.dart'
     as _i654;
 import 'package:fitness_trakcer/features/workout/domain/usecases/watch_exercises.dart'
@@ -277,11 +287,20 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i587.WatchLocation>(
       () => _i587.WatchLocation(gh<_i922.LocationTracker>()),
     );
+    gh.lazySingleton<_i683.RecoveryRepository>(
+      () => _i729.RecoveryRepositoryImpl(gh<_i984.HealthDataSource>()),
+    );
     gh.lazySingleton<_i389.RequestReminderPermission>(
       () => _i389.RequestReminderPermission(gh<_i509.ReminderScheduler>()),
     );
     gh.lazySingleton<_i146.WgerRemoteDataSource>(
       () => _i146.WgerRemoteDataSource(gh<_i519.Client>()),
+    );
+    gh.lazySingleton<_i551.GetRecoverySnapshot>(
+      () => _i551.GetRecoverySnapshot(
+        gh<_i683.RecoveryRepository>(),
+        gh<_i369.Clock>(),
+      ),
     );
     gh.lazySingleton<_i1020.ActivityLocalDataSource>(
       () => _i1020.ActivityLocalDataSource(gh<_i160.AppDatabase>()),
@@ -306,6 +325,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i1029.RoutineLocalDataSource>(
       () => _i1029.RoutineLocalDataSource(gh<_i160.AppDatabase>()),
+    );
+    gh.lazySingleton<_i695.WellnessLocalDataSource>(
+      () => _i695.WellnessLocalDataSource(gh<_i160.AppDatabase>()),
     );
     gh.lazySingleton<_i613.ExerciseLocalDataSource>(
       () => _i613.ExerciseLocalDataSource(gh<_i160.AppDatabase>()),
@@ -399,8 +421,8 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i1031.WatchGoals>(
       () => _i1031.WatchGoals(gh<_i492.GoalRepository>()),
     );
-    gh.lazySingleton<_i695.SyncRemoteExercises>(
-      () => _i695.SyncRemoteExercises(
+    gh.lazySingleton<_i696.SyncRemoteExercises>(
+      () => _i696.SyncRemoteExercises(
         gh<_i7.ExerciseRepository>(),
         gh<_i369.Clock>(),
       ),
@@ -575,6 +597,14 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i1056.LogBodyMeasurement>(),
       ),
     );
+    gh.lazySingleton<_i817.GetWeeklyReport>(
+      () => _i817.GetWeeklyReport(
+        gh<_i956.WorkoutRepository>(),
+        gh<_i1059.TrackedActivityRepository>(),
+        gh<_i507.ActivityRepository>(),
+        gh<_i369.Clock>(),
+      ),
+    );
     gh.lazySingleton<_i260.StartWorkoutFromRoutine>(
       () => _i260.StartWorkoutFromRoutine(
         gh<_i866.RoutineRepository>(),
@@ -597,7 +627,7 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i225.WatchExercises>(),
         gh<_i981.CreateCustomExercise>(),
         gh<_i48.DeleteCustomExercise>(),
-        gh<_i695.SyncRemoteExercises>(),
+        gh<_i696.SyncRemoteExercises>(),
         gh<_i733.GetExerciseSyncStatus>(),
       ),
     );
@@ -695,16 +725,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i391.DeleteGoal>(),
       ),
     );
-    gh.lazySingleton<_i711.GetDashboardSummary>(
-      () => _i711.GetDashboardSummary(
-        gh<_i507.ActivityRepository>(),
-        gh<_i956.WorkoutRepository>(),
-        gh<_i141.GetRoutinesForDate>(),
-        gh<_i310.GetLatestWeight>(),
-        gh<_i139.GetGoalProgress>(),
-        gh<_i369.Clock>(),
-      ),
-    );
     gh.lazySingleton<_i155.EvaluateAchievements>(
       () => _i155.EvaluateAchievements(
         gh<_i550.AchievementRepository>(),
@@ -712,6 +732,19 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i1059.TrackedActivityRepository>(),
         gh<_i507.ActivityRepository>(),
         gh<_i139.GetGoalProgress>(),
+        gh<_i369.Clock>(),
+      ),
+    );
+    gh.lazySingleton<_i711.GetDashboardSummary>(
+      () => _i711.GetDashboardSummary(
+        gh<_i507.ActivityRepository>(),
+        gh<_i956.WorkoutRepository>(),
+        gh<_i141.GetRoutinesForDate>(),
+        gh<_i310.GetLatestWeight>(),
+        gh<_i139.GetGoalProgress>(),
+        gh<_i551.GetRecoverySnapshot>(),
+        gh<_i817.GetWeeklyReport>(),
+        gh<_i1059.TrackedActivityRepository>(),
         gh<_i369.Clock>(),
       ),
     );

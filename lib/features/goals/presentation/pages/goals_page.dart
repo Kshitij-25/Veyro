@@ -1,9 +1,9 @@
-import 'package:fitness_trakcer/core/layout/content_constraint.dart';
+import 'package:fitness_trakcer/core/theme/veyro_colors.dart';
+import 'package:fitness_trakcer/core/theme/veyro_text.dart';
 import 'package:fitness_trakcer/core/units/unit_system.dart';
 import 'package:fitness_trakcer/core/utils/parsing.dart';
-import 'package:fitness_trakcer/core/widgets/empty_view.dart';
-import 'package:fitness_trakcer/core/widgets/error_view.dart';
 import 'package:fitness_trakcer/core/widgets/loading_view.dart';
+import 'package:fitness_trakcer/core/widgets/veyro_widgets.dart';
 import 'package:fitness_trakcer/features/goals/domain/entities/goal_period.dart';
 import 'package:fitness_trakcer/features/goals/domain/entities/goal_type.dart';
 import 'package:fitness_trakcer/features/goals/domain/usecases/create_goal.dart';
@@ -19,89 +19,87 @@ class GoalsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final units = context.unitSystem;
-    return Scaffold(
-      appBar: AppBar(title: const Text('Goals')),
-      floatingActionButton: FloatingActionButton(
-        tooltip: 'New goal',
-        onPressed: () => _create(context, units),
-        child: const Icon(Icons.add),
-      ),
-      body: BlocConsumer<GoalsCubit, GoalsState>(
-        listenWhen: (previous, current) =>
-            current.failure != null && current.failure != previous.failure,
-        listener: (context, state) =>
-            ScaffoldMessenger.of(context)
-                .showSnackBar(SnackBar(content: Text(state.failure!.message))),
-        builder: (context, state) {
-          if (state.status.isPending) return const LoadingView();
-          if (state.status.isFailure && state.progress.isEmpty) {
-            return ErrorView(
-              message: state.failure?.message ?? 'Something went wrong.',
-              onRetry: context.read<GoalsCubit>().refresh,
-            );
-          }
-          if (state.progress.isEmpty) {
-            return const EmptyView(message: 'Set a goal to get started.');
-          }
-          return ContentConstraint(
-            maxWidth: 720,
-            child: RefreshIndicator.adaptive(
-              onRefresh: context.read<GoalsCubit>().refresh,
-              child: ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  for (final progress in state.progress)
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    progress.goal.type.label,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleMedium,
-                                  ),
-                                ),
-                                if (progress.isAchieved)
-                                  const Icon(
-                                    Icons.check_circle,
-                                    color: Colors.green,
-                                  ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete_outline),
-                                  onPressed: () => context
-                                      .read<GoalsCubit>()
-                                      .delete(progress.goal.id),
-                                ),
-                              ],
-                            ),
-                            LinearProgressIndicator(value: progress.fraction),
-                            const SizedBox(height: 8),
-                            Text(
-                              '${progress.goal.type.format(progress.currentValue, units)} of '
-                              '${progress.goal.type.format(progress.goal.targetValue, units)}',
-                            ),
-                            if (progress.goal.type.period != GoalPeriod.overall)
-                              Text(
-                                'Streak ${progress.currentStreak} '
-                                '${progress.goal.type.period == GoalPeriod.daily ? 'days' : 'weeks'} '
-                                '(best ${progress.longestStreak})',
-                              ),
-                          ],
+    final v = context.veyro;
+    return BlocConsumer<GoalsCubit, GoalsState>(
+      listenWhen: (previous, current) =>
+          current.failure != null && current.failure != previous.failure,
+      listener: (context, state) =>
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(state.failure!.message))),
+      builder: (context, state) {
+        final Widget? message = state.status.isPending
+            ? const LoadingView()
+            : state.status.isFailure && state.progress.isEmpty
+            ? VEmpty(state.failure?.message ?? 'Something went wrong.')
+            : state.progress.isEmpty
+            ? const VEmpty('Set a goal to get started.')
+            : null;
+        return VSubPage(
+          title: 'Goals',
+          action: VButton(
+            '+ New',
+            height: 36,
+            onPressed: () => _create(context, units),
+          ),
+          children: [
+            ?message,
+            for (final progress in state.progress)
+              VCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.alphabetic,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            progress.goal.type.label,
+                            style: VeyroText.body(17, weight: FontWeight.w700),
+                          ),
                         ),
-                      ),
+                        Text(
+                          progress.isAchieved
+                              ? 'DONE'
+                              : '${(progress.fraction * 100).round()}%',
+                          style: VeyroText.display(26),
+                        ),
+                      ],
                     ),
-                ],
+                    const SizedBox(height: 10),
+                    VProgressBar(value: progress.fraction, height: 10),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            [
+                              '${progress.goal.type.format(progress.currentValue, units)} of '
+                                  '${progress.goal.type.format(progress.goal.targetValue, units)}',
+                              if (progress.goal.type.period !=
+                                  GoalPeriod.overall)
+                                'streak ${progress.currentStreak} '
+                                    '${progress.goal.type.period == GoalPeriod.daily ? 'days' : 'weeks'}',
+                            ].join(' · '),
+                            style: VeyroText.body(12.5, color: v.mute),
+                          ),
+                        ),
+                        VTextAction(
+                          'Delete',
+                          onPressed: () => context.read<GoalsCubit>().delete(
+                            progress.goal.id,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          );
-        },
-      ),
+          ],
+        );
+      },
     );
   }
 

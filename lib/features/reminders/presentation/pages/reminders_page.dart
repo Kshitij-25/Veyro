@@ -1,6 +1,7 @@
-import 'package:fitness_trakcer/core/layout/content_constraint.dart';
-import 'package:fitness_trakcer/core/widgets/empty_view.dart';
+import 'package:fitness_trakcer/core/theme/veyro_colors.dart';
+import 'package:fitness_trakcer/core/theme/veyro_text.dart';
 import 'package:fitness_trakcer/core/widgets/loading_view.dart';
+import 'package:fitness_trakcer/core/widgets/veyro_widgets.dart';
 import 'package:fitness_trakcer/features/reminders/domain/entities/reminder.dart';
 import 'package:fitness_trakcer/features/reminders/domain/entities/reminder_type.dart';
 import 'package:fitness_trakcer/features/reminders/presentation/cubit/reminders_cubit.dart';
@@ -14,56 +15,110 @@ class RemindersPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Reminders')),
-      floatingActionButton: FloatingActionButton(
-        tooltip: 'New reminder',
-        onPressed: () => _create(context),
-        child: const Icon(Icons.add),
-      ),
-      body: BlocConsumer<RemindersCubit, RemindersState>(
-        listenWhen: (previous, current) =>
-            (current.failure != null && current.failure != previous.failure) ||
-            (current.notificationsDenied && !previous.notificationsDenied),
-        listener: (context, state) {
-          final message =
-              state.failure?.message ??
-              'Notifications are turned off, so reminders won\'t appear.';
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text(message)));
-        },
-        builder: (context, state) {
-          if (state.status.isPending) return const LoadingView();
-          if (state.reminders.isEmpty) {
-            return const EmptyView(message: 'No reminders yet.');
-          }
-          return ContentConstraint(
-            maxWidth: 720,
-            child: ListView(
-              children: [
-                for (final reminder in state.reminders)
-                  Dismissible(
-                    key: ValueKey(reminder.id),
-                    onDismissed: (_) =>
-                        context.read<RemindersCubit>().delete(reminder.id),
-                    background: const ColoredBox(color: Colors.red),
-                    child: SwitchListTile.adaptive(
-                      title: Text(reminder.title),
-                      subtitle: Text(
-                        '${TimeOfDay(hour: reminder.hour, minute: reminder.minute).format(context)} · '
-                        '${reminder.isDaily ? 'Every day' : [for (final d in reminder.weekdays.toList()..sort()) _weekdayLabels[d - 1]].join(' ')}',
+    final v = context.veyro;
+    return BlocConsumer<RemindersCubit, RemindersState>(
+      listenWhen: (previous, current) =>
+          (current.failure != null && current.failure != previous.failure) ||
+          (current.notificationsDenied && !previous.notificationsDenied),
+      listener: (context, state) {
+        final message =
+            state.failure?.message ??
+            'Notifications are turned off, so reminders won\'t appear.';
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(message)));
+      },
+      builder: (context, state) {
+        return VSubPage(
+          title: 'Reminders',
+          action: VButton(
+            '+ New',
+            height: 36,
+            onPressed: () => _create(context),
+          ),
+          children: [
+            if (state.notificationsDenied)
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: v.card,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: v.acc, width: 1.5),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Notifications are off',
+                      style: VeyroText.body(15, weight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Allow notifications in Settings to receive reminders.',
+                      style: VeyroText.body(13, color: v.mute),
+                    ),
+                  ],
+                ),
+              ),
+            if (state.status.isPending)
+              const LoadingView()
+            else if (state.reminders.isEmpty)
+              const VEmpty('No reminders yet.'),
+            for (final reminder in state.reminders)
+              VCard(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
+                radius: 20,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            TimeOfDay(
+                              hour: reminder.hour,
+                              minute: reminder.minute,
+                            ).format(context),
+                            style: VeyroText.display(34),
+                          ),
+                          Text(
+                            reminder.title,
+                            style: VeyroText.body(14, weight: FontWeight.w600),
+                          ),
+                          const SizedBox(height: 6),
+                          Row(
+                            children: [
+                              for (var d = 1; d <= 7; d++)
+                                _DayDot(
+                                  label: _weekdayLabels[d - 1],
+                                  on:
+                                      reminder.isDaily ||
+                                      reminder.weekdays.contains(d),
+                                ),
+                            ],
+                          ),
+                        ],
                       ),
+                    ),
+                    VTextAction(
+                      'Delete',
+                      onPressed: () =>
+                          context.read<RemindersCubit>().delete(reminder.id),
+                    ),
+                    VSwitch(
                       value: reminder.isEnabled,
                       onChanged: (enabled) => context
                           .read<RemindersCubit>()
                           .setEnabled(reminder.id, enabled: enabled),
                     ),
-                  ),
-              ],
-            ),
-          );
-        },
-      ),
+                  ],
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 
@@ -74,6 +129,36 @@ class RemindersPage extends StatelessWidget {
       builder: (context) => const _ReminderDialog(),
     );
     if (reminder != null) await cubit.save(reminder);
+  }
+}
+
+class _DayDot extends StatelessWidget {
+  const _DayDot({required this.label, required this.on});
+
+  final String label;
+  final bool on;
+
+  @override
+  Widget build(BuildContext context) {
+    final v = context.veyro;
+    return Container(
+      width: 22,
+      height: 22,
+      margin: const EdgeInsets.only(right: 4),
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: on ? v.ink : v.bg,
+        shape: BoxShape.circle,
+      ),
+      child: Text(
+        label,
+        style: VeyroText.body(
+          11,
+          weight: FontWeight.w700,
+          color: on ? v.bg : v.mute,
+        ),
+      ),
+    );
   }
 }
 

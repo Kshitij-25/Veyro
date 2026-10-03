@@ -1,3 +1,5 @@
+import 'package:fitness_trakcer/core/theme/veyro_colors.dart';
+import 'package:fitness_trakcer/core/theme/veyro_text.dart';
 import 'package:fitness_trakcer/core/units/unit_converter.dart';
 import 'package:fitness_trakcer/core/units/unit_system.dart';
 import 'package:fitness_trakcer/core/utils/parsing.dart';
@@ -5,7 +7,7 @@ import 'package:fitness_trakcer/features/workout/domain/entities/exercise_tracki
 import 'package:fitness_trakcer/features/workout/domain/entities/workout_set.dart';
 import 'package:flutter/material.dart';
 
-/// Placeholder row to edit one set. Values are committed when a field loses
+/// Row to edit one set. Values are committed when a field loses
 /// focus or is submitted, so storage isn't written on every keystroke.
 class SetRow extends StatelessWidget {
   const SetRow({
@@ -31,7 +33,10 @@ class SetRow extends StatelessWidget {
       children: [
         SizedBox(
           width: 28,
-          child: Text(set.isWarmup ? 'W' : '${set.position + 1}'),
+          child: Text(
+            set.isWarmup ? 'W' : '${set.position + 1}',
+            style: VeyroText.display(20, color: context.veyro.mute),
+          ),
         ),
         if (trackingType.tracksWeight)
           _NumberCell(
@@ -79,9 +84,27 @@ class SetRow extends StatelessWidget {
               ),
             ),
           ),
-        Checkbox(value: set.isCompleted, onChanged: (_) => onToggleCompleted()),
+        GestureDetector(
+          onTap: onToggleCompleted,
+          child: Container(
+            width: 40,
+            height: 40,
+            margin: const EdgeInsets.only(left: 4),
+            decoration: BoxDecoration(
+              color: set.isCompleted ? context.veyro.acc : Colors.transparent,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: set.isCompleted ? context.veyro.acc : context.veyro.mute,
+                width: 2,
+              ),
+            ),
+            child: set.isCompleted
+                ? const Icon(Icons.check, color: VeyroColors.onAccent)
+                : null,
+          ),
+        ),
         IconButton(
-          icon: const Icon(Icons.close),
+          icon: Icon(Icons.close, size: 18, color: context.veyro.mute),
           tooltip: 'Remove set',
           onPressed: onDelete,
         ),
@@ -157,7 +180,13 @@ class _NumberCellState extends State<_NumberCell> {
           focusNode: _focusNode,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           textAlign: TextAlign.center,
-          decoration: InputDecoration(isDense: true, suffixText: widget.label),
+          style: VeyroText.display(24, color: context.veyro.ink),
+          decoration: InputDecoration(
+            isDense: true,
+            filled: false,
+            suffixText: widget.label,
+            suffixStyle: VeyroText.body(11, color: context.veyro.mute),
+          ),
           onSubmitted: (_) => _commit(),
         ),
       ),

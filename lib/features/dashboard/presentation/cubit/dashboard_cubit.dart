@@ -5,6 +5,7 @@ import 'package:fitness_trakcer/features/dashboard/domain/entities/dashboard_sum
 import 'package:fitness_trakcer/features/dashboard/domain/usecases/get_dashboard_summary.dart';
 import 'package:fitness_trakcer/features/goals/domain/entities/achievement.dart';
 import 'package:fitness_trakcer/features/goals/domain/usecases/evaluate_achievements.dart';
+import 'package:fitness_trakcer/features/wellness/presentation/wellness_store.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
@@ -38,14 +39,17 @@ class DashboardCubit extends Cubit<DashboardState> {
     final result = await _getDashboardSummary(const NoParams());
     if (isClosed) return;
     result.when(
-      success: (summary) => emit(
-        state.copyWith(
-          status: ViewStatus.success,
-          summary: summary,
-          newlyUnlocked: unlocked.dataOrNull ?? const [],
-          failure: null,
-        ),
-      ),
+      success: (summary) {
+        WellnessStore.instance.setExerciseKcal(summary.exerciseKcal);
+        emit(
+          state.copyWith(
+            status: ViewStatus.success,
+            summary: summary,
+            newlyUnlocked: unlocked.dataOrNull ?? const [],
+            failure: null,
+          ),
+        );
+      },
       failure: (failure) =>
           emit(state.copyWith(status: ViewStatus.failure, failure: failure)),
     );

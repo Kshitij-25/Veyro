@@ -1,6 +1,7 @@
 import 'package:fitness_trakcer/core/utils/date_range.dart';
 import 'package:fitness_trakcer/features/activity/data/datasources/health_data_source.dart';
 import 'package:fitness_trakcer/features/activity/data/models/health_day_summary.dart';
+import 'package:fitness_trakcer/features/activity/data/models/health_recovery_day.dart';
 import 'package:fitness_trakcer/features/activity/domain/entities/health_access_status.dart';
 
 /// Used on platforms without a health store (web, desktop). Activity can
@@ -18,5 +19,9 @@ class UnavailableHealthDataSource implements HealthDataSource {
 
   @override
   Future<List<HealthDaySummary>> getDailySummaries(DateRange range) async =>
+      const [];
+
+  @override
+  Future<List<HealthRecoveryDay>> getRecoveryDays(DateRange range) async =>
       const [];
 }

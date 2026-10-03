@@ -7,6 +7,7 @@ import 'package:fitness_trakcer/core/database/tables/profile_tables.dart';
 import 'package:fitness_trakcer/core/database/tables/reminder_tables.dart';
 import 'package:fitness_trakcer/core/database/tables/routine_tables.dart';
 import 'package:fitness_trakcer/core/database/tables/tracking_tables.dart';
+import 'package:fitness_trakcer/core/database/tables/wellness_tables.dart';
 import 'package:fitness_trakcer/core/database/tables/workout_tables.dart';
 
 part 'app_database.g.dart';
@@ -27,13 +28,17 @@ part 'app_database.g.dart';
     Reminders,
     TrackedActivities,
     AppMetadata,
+    Habits,
+    HabitCompletions,
+    FoodLogEntries,
+    WaterLogs,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -59,6 +64,12 @@ class AppDatabase extends _$AppDatabase {
         await customStatement(
           "DELETE FROM reminders WHERE type IN ('water', 'meal')",
         );
+      }
+      if (from < 4) {
+        await migrator.createTable(habits);
+        await migrator.createTable(habitCompletions);
+        await migrator.createTable(foodLogEntries);
+        await migrator.createTable(waterLogs);
       }
     },
     beforeOpen: (details) async {

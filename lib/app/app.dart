@@ -6,6 +6,7 @@ import 'package:fitness_trakcer/core/theme/app_theme.dart';
 import 'package:fitness_trakcer/features/dashboard/presentation/cubit/dashboard_cubit.dart';
 import 'package:fitness_trakcer/features/gps_tracking/presentation/cubit/tracking_cubit.dart';
 import 'package:fitness_trakcer/features/profile/presentation/cubit/profile_cubit.dart';
+import 'package:fitness_trakcer/features/wellness/presentation/wellness_store.dart';
 import 'package:fitness_trakcer/features/workout/presentation/cubit/active_workout_cubit.dart';
 import 'package:fitness_trakcer/features/workout/presentation/cubit/rest_timer_cubit.dart';
 import 'package:flutter/material.dart';
@@ -25,13 +26,17 @@ class App extends StatelessWidget {
         BlocProvider.value(value: getIt<TrackingCubit>()),
         BlocProvider.value(value: getIt<DashboardCubit>()..load()),
       ],
-      child: MaterialApp.router(
-        title: 'Fitness Tracker',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.light,
-        darkTheme: AppTheme.dark,
-        routerConfig: getIt<AppRouter>().config,
-        scrollBehavior: const _AppScrollBehavior(),
+      child: ListenableBuilder(
+        listenable: WellnessStore.instance,
+        builder: (context, _) => MaterialApp.router(
+          title: 'Veyro',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.light,
+          darkTheme: AppTheme.dark,
+          themeMode: WellnessStore.instance.themeMode,
+          routerConfig: getIt<AppRouter>().config,
+          scrollBehavior: const _AppScrollBehavior(),
+        ),
       ),
     );
   }
