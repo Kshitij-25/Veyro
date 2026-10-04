@@ -41,7 +41,7 @@ class TrackingPage extends StatelessWidget {
             final saved = state.savedActivity;
             if (saved != null) {
               context.read<TrackingCubit>().acknowledgeSaved();
-              context.go(AppRoutes.trackingSummary, extra: saved);
+              context.push(AppRoutes.trackingSummary, extra: saved);
               return;
             }
             final message = state.failure?.message;

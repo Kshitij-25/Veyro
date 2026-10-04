@@ -26,9 +26,11 @@ class AdaptiveScaffold extends StatelessWidget {
     final sizeClass = WindowSizeClass.of(context);
 
     if (sizeClass.isCompact) {
+      // The bar floats over the content; the body extends beneath it.
       return Scaffold(
+        extendBody: true,
         body: body,
-        bottomNavigationBar: _VeyroTabBar(
+        bottomNavigationBar: _FloatingTabBar(
           destinations: destinations,
           selectedIndex: selectedIndex,
           onSelected: onDestinationSelected,
@@ -103,8 +105,8 @@ class AdaptiveScaffold extends StatelessWidget {
                 destinations: [
                   for (final d in destinations)
                     NavigationRailDestination(
-                      icon: Icon(d.icon),
-                      selectedIcon: Icon(d.selectedIcon),
+                      icon: NavIcon(d.asset, size: 24),
+                      selectedIcon: NavIcon(d.asset, selected: true, size: 24),
                       label: Text(d.label),
                     ),
                 ],
@@ -118,8 +120,10 @@ class AdaptiveScaffold extends StatelessWidget {
   }
 }
 
-class _VeyroTabBar extends StatelessWidget {
-  const _VeyroTabBar({
+/// Rounded bar that floats above the content with a soft shadow. The
+/// selected tab sits in a tinted capsule that slides between items.
+class _FloatingTabBar extends StatelessWidget {
+  const _FloatingTabBar({
     required this.destinations,
     required this.selectedIndex,
     required this.onSelected,
@@ -129,48 +133,112 @@ class _VeyroTabBar extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onSelected;
 
+  static const _height = 66.0;
+  static const _inset = 6.0;
+
   @override
   Widget build(BuildContext context) {
     final v = context.veyro;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: v.bg,
-        border: Border(top: BorderSide(color: v.line)),
-      ),
-      child: SafeArea(
-        top: false,
-        child: SizedBox(
-          height: 62,
-          child: Row(
-            children: [
-              for (var i = 0; i < destinations.length; i++)
-                Expanded(
-                  child: InkWell(
-                    onTap: () => onSelected(i),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final count = destinations.length;
+    return SafeArea(
+      top: false,
+      minimum: const EdgeInsets.only(bottom: 6),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(18, 0, 18, 4),
+        child: Center(
+          heightFactor: 1,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 520),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: v.card,
+                borderRadius: BorderRadius.circular(_height / 2),
+                border: Border.all(color: v.line),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: dark ? .5 : .14),
+                    blurRadius: 24,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: SizedBox(
+                height: _height,
+                child: LayoutBuilder(
+                  builder: (context, box) {
+                    final slot = box.maxWidth / count;
+                    return Stack(
                       children: [
-                        Icon(
-                          i == selectedIndex
-                              ? destinations[i].selectedIcon
-                              : destinations[i].icon,
-                          size: 26,
-                          color: i == selectedIndex ? v.acc : v.mute,
-                        ),
-                        const SizedBox(height: 3),
-                        Text(
-                          destinations[i].label,
-                          style: VeyroText.body(
-                            11,
-                            weight: FontWeight.w600,
-                            color: i == selectedIndex ? v.acc : v.mute,
+                        AnimatedPositioned(
+                          duration: const Duration(milliseconds: 280),
+                          curve: Curves.easeOutCubic,
+                          left: slot * selectedIndex + _inset,
+                          top: _inset,
+                          width: slot - _inset * 2,
+                          height: _height - _inset * 2,
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: v.acc.withValues(alpha: dark ? .18 : .12),
+                              borderRadius: BorderRadius.circular(
+                                (_height - _inset * 2) / 2,
+                              ),
+                            ),
                           ),
                         ),
+                        Row(
+                          children: [
+                            for (var i = 0; i < count; i++)
+                              Expanded(
+                                child: Semantics(
+                                  button: true,
+                                  selected: i == selectedIndex,
+                                  label: destinations[i].label,
+                                  child: GestureDetector(
+                                    behavior: HitTestBehavior.opaque,
+                                    onTap: () => onSelected(i),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        NavIcon(
+                                          destinations[i].asset,
+                                          selected: i == selectedIndex,
+                                          size: 25,
+                                          color: v.mute,
+                                          gradient: LinearGradient(
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                            colors: [
+                                              const Color(0xFFFFB347),
+                                              v.acc,
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          destinations[i].label,
+                                          style: VeyroText.body(
+                                            10.5,
+                                            weight: FontWeight.w700,
+                                            color: i == selectedIndex
+                                                ? v.acc
+                                                : v.mute,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
                       ],
-                    ),
-                  ),
+                    );
+                  },
                 ),
-            ],
+              ),
+            ),
           ),
         ),
       ),

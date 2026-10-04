@@ -63,13 +63,13 @@ class _FoodSearchPageState extends State<FoodSearchPage> {
                         children: [
                           VBackButton(
                             onPressed: () =>
-                                veyroBack(context, fallback: AppRoutes.fuel),
+                                veyroBack(context, fallback: AppRoutes.food),
                           ),
                           VButton(
                             'Scan',
                             style: VButtonStyle.card,
                             height: 36,
-                            onPressed: () => context.go(AppRoutes.scan),
+                            onPressed: () => context.push(AppRoutes.scan),
                           ),
                         ],
                       ),
@@ -119,7 +119,9 @@ class _FoodSearchPageState extends State<FoodSearchPage> {
                         if (searching && state.isSearching)
                           const Padding(
                             padding: EdgeInsets.all(24),
-                            child: Center(child: CircularProgressIndicator()),
+                            child: Center(
+                              child: CircularProgressIndicator.adaptive(),
+                            ),
                           )
                         else if (searching && state.query.trim().length < 2)
                           VCard(
@@ -409,7 +411,7 @@ class _CreateFoodSheetState extends State<_CreateFoodSheet> {
   }
 }
 
-/// Serving sheet for one food; adds it to the diary and returns to Fuel.
+/// Serving sheet for one food; adds it to the diary and returns to Food.
 Future<void> showFoodSheet(
   BuildContext context,
   FoodItem food,
@@ -485,7 +487,7 @@ Future<void> showFoodSheet(
                     WellnessStore.instance.logFood(target, food, servings);
                     onLogged?.call();
                     Navigator.pop(sheetContext);
-                    context.go(AppRoutes.fuel);
+                    context.go(AppRoutes.food);
                   },
                 ),
                 TextButton(

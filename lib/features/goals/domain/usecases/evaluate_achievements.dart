@@ -11,6 +11,7 @@ import 'package:fitness_trakcer/features/goals/domain/entities/goal_type.dart';
 import 'package:fitness_trakcer/features/goals/domain/repositories/achievement_repository.dart';
 import 'package:fitness_trakcer/features/goals/domain/usecases/get_goal_progress.dart';
 import 'package:fitness_trakcer/features/gps_tracking/domain/repositories/tracked_activity_repository.dart';
+import 'package:fitness_trakcer/features/gps_tracking/domain/services/training_sessions.dart';
 import 'package:fitness_trakcer/features/workout/domain/repositories/workout_repository.dart';
 import 'package:injectable/injectable.dart';
 
@@ -49,13 +50,18 @@ class EvaluateAchievements implements UseCase<List<Achievement>, NoParams> {
 
     return guard(() async {
       final now = _clock.now();
-      final workoutCount =
-          (await _workouts.countCompletedWorkouts()).dataOrNull ?? 0;
+      final everything = DateRange(DateTime(1970), DateTime(2100));
       final tracked =
-          (await _trackedActivities.getActivities(
-            DateRange(DateTime(1970), DateTime(2100)),
-          )).dataOrNull ??
+          (await _trackedActivities.getActivities(everything)).dataOrNull ??
           const [];
+      final ownWorkouts =
+          (await _workouts.getCompletedWorkouts(everything)).dataOrNull ??
+          const [];
+      final workoutCount = TrainingSessions.merge(
+        ownWorkouts,
+        tracked,
+        now: now,
+      ).length;
       final totalDistance = tracked.fold<double>(
         0,
         (sum, a) => sum + a.distanceMeters,

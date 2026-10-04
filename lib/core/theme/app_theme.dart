@@ -2,7 +2,6 @@ import 'package:fitness_trakcer/core/theme/veyro_colors.dart';
 import 'package:fitness_trakcer/core/theme/veyro_text.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 abstract final class AppTheme {
   static ThemeData get light => _build(Brightness.light);
@@ -32,7 +31,7 @@ abstract final class AppTheme {
       scaffoldBackgroundColor: v.bg,
       extensions: [v],
       textTheme: ThemeData(brightness: brightness).textTheme.apply(
-        fontFamily: GoogleFonts.instrumentSans().fontFamily,
+        fontFamily: VeyroText.bodyFamily,
         bodyColor: v.ink,
         displayColor: v.ink,
       ),

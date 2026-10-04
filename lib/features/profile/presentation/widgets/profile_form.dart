@@ -3,6 +3,7 @@ import 'package:fitness_trakcer/core/theme/veyro_text.dart';
 import 'package:fitness_trakcer/core/units/unit_converter.dart';
 import 'package:fitness_trakcer/core/units/unit_system.dart';
 import 'package:fitness_trakcer/core/utils/parsing.dart';
+import 'package:fitness_trakcer/core/widgets/veyro_pickers.dart';
 import 'package:fitness_trakcer/core/widgets/veyro_widgets.dart';
 import 'package:fitness_trakcer/features/profile/domain/entities/activity_level.dart';
 import 'package:fitness_trakcer/features/profile/domain/entities/fitness_goal.dart';
@@ -102,11 +103,11 @@ class _ProfileFormState extends State<ProfileForm> {
 
   Future<void> _pickBirthDate() async {
     final now = DateTime.now();
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _birthDate ?? DateTime(now.year - 25),
-      firstDate: DateTime(now.year - 100),
-      lastDate: now,
+    final picked = await showAdaptiveDatePicker(
+      context,
+      initial: _birthDate ?? DateTime(now.year - 25),
+      first: DateTime(now.year - 100),
+      last: now,
     );
     if (picked != null) setState(() => _birthDate = picked);
   }

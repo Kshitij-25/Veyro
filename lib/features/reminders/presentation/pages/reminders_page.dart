@@ -1,6 +1,7 @@
 import 'package:fitness_trakcer/core/theme/veyro_colors.dart';
 import 'package:fitness_trakcer/core/theme/veyro_text.dart';
 import 'package:fitness_trakcer/core/widgets/loading_view.dart';
+import 'package:fitness_trakcer/core/widgets/veyro_pickers.dart';
 import 'package:fitness_trakcer/core/widgets/veyro_widgets.dart';
 import 'package:fitness_trakcer/features/reminders/domain/entities/reminder.dart';
 import 'package:fitness_trakcer/features/reminders/domain/entities/reminder_type.dart';
@@ -209,9 +210,9 @@ class _ReminderDialogState extends State<_ReminderDialog> {
               title: const Text('Time'),
               trailing: Text(_time.format(context)),
               onTap: () async {
-                final picked = await showTimePicker(
-                  context: context,
-                  initialTime: _time,
+                final picked = await showAdaptiveTimePicker(
+                  context,
+                  initial: _time,
                 );
                 if (picked != null) setState(() => _time = picked);
               },

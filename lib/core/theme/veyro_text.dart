@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 /// Veyro type styles: Barlow Condensed for numbers and titles, Instrument
-/// Sans for everything else.
+/// Sans for everything else. Both ship with the app (assets/fonts).
 abstract final class VeyroText {
+  static const displayFamily = 'BarlowCondensed';
+  static const bodyFamily = 'InstrumentSans';
+
   /// Big condensed numerals/titles. Pass [size]; tight line height by default.
   static TextStyle display(double size, {Color? color, double height = 1}) =>
-      GoogleFonts.barlowCondensed(
+      TextStyle(
+        fontFamily: displayFamily,
         fontSize: size,
         fontWeight: FontWeight.w800,
         height: height,
@@ -19,9 +22,12 @@ abstract final class VeyroText {
     Color? color,
     double? height,
     double? letterSpacing,
-  }) => GoogleFonts.instrumentSans(
+  }) => TextStyle(
+    fontFamily: bodyFamily,
     fontSize: size,
     fontWeight: weight,
+    // Instrument Sans is a variable font: set the weight axis explicitly.
+    fontVariations: [FontVariation('wght', weight.value.toDouble())],
     color: color,
     height: height,
     letterSpacing: letterSpacing,

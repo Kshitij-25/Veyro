@@ -723,7 +723,7 @@ class _SetEditorState extends State<_SetEditor> {
                     const SizedBox(width: 7),
                     chip(
                       'Plates',
-                      () => context.go('${AppRoutes.tools}?tab=Plates'),
+                      () => context.push('${AppRoutes.tools}?tab=Plates'),
                     ),
                     const SizedBox(width: 7),
                     chip('Note', () => _editNote(context)),

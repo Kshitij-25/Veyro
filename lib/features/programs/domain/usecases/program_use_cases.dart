@@ -5,6 +5,8 @@ import 'package:fitness_trakcer/core/utils/clock.dart';
 import 'package:fitness_trakcer/core/utils/date_range.dart';
 import 'package:fitness_trakcer/core/utils/id_generator.dart';
 import 'package:fitness_trakcer/core/utils/result.dart';
+import 'package:fitness_trakcer/features/gps_tracking/domain/repositories/tracked_activity_repository.dart';
+import 'package:fitness_trakcer/features/gps_tracking/domain/services/training_sessions.dart';
 import 'package:fitness_trakcer/features/programs/data/seed/training_catalogue.dart';
 import 'package:fitness_trakcer/features/programs/domain/entities/training_plan.dart';
 import 'package:fitness_trakcer/features/programs/domain/repositories/program_repository.dart';
@@ -19,10 +21,16 @@ import 'package:injectable/injectable.dart';
 /// after it since enrolling. `null` when not enrolled.
 @lazySingleton
 class GetProgramProgress implements UseCase<ProgramProgress?, NoParams> {
-  const GetProgramProgress(this._programs, this._workouts, this._clock);
+  const GetProgramProgress(
+    this._programs,
+    this._workouts,
+    this._tracked,
+    this._clock,
+  );
 
   final ProgramRepository _programs;
   final WorkoutRepository _workouts;
+  final TrackedActivityRepository _tracked;
   final Clock _clock;
 
   @override
@@ -34,12 +42,21 @@ class GetProgramProgress implements UseCase<ProgramProgress?, NoParams> {
         .firstOrNull;
     if (program == null) return null;
     final now = _clock.now();
-    final done = (await _workouts.getCompletedWorkouts(
-      DateRange(enrollment.startedAt, now.add(const Duration(days: 1))),
-    )).getOrThrow();
-    final count = done
-        .where((w) => w.name.startsWith(program.workoutPrefix))
-        .length;
+    final since = DateRange(
+      enrollment.startedAt,
+      now.add(const Duration(days: 1)),
+    );
+    final done = (await _workouts.getCompletedWorkouts(since)).getOrThrow();
+    // A strength session recorded by a Watch has no program name, but it is
+    // still a session done while enrolled.
+    final watch = TrainingSessions.withoutDuplicates(
+      done,
+      (await _tracked.getActivities(since)).dataOrNull ?? const [],
+      now: now,
+    ).where((a) => a.isStrengthSession).length;
+    final count =
+        done.where((w) => w.name.startsWith(program.workoutPrefix)).length +
+        watch;
     return ProgramProgress(
       program: program,
       startedAt: enrollment.startedAt,

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:fitness_trakcer/core/layout/adaptive_scaffold.dart';
 import 'package:fitness_trakcer/core/layout/navigation_destination_data.dart';
 import 'package:fitness_trakcer/core/router/app_routes.dart';
@@ -7,6 +9,7 @@ import 'package:fitness_trakcer/core/units/unit_formatter.dart';
 import 'package:fitness_trakcer/features/dashboard/presentation/cubit/dashboard_cubit.dart';
 import 'package:fitness_trakcer/features/gps_tracking/domain/entities/tracking_status.dart';
 import 'package:fitness_trakcer/features/gps_tracking/presentation/cubit/tracking_cubit.dart';
+import 'package:fitness_trakcer/features/health_sync/presentation/cubit/health_sync_cubit.dart';
 import 'package:fitness_trakcer/features/profile/presentation/unit_system_context.dart';
 import 'package:fitness_trakcer/features/wellness/presentation/wellness_format.dart';
 import 'package:fitness_trakcer/features/wellness/presentation/wellness_store.dart';
@@ -27,23 +30,19 @@ class AppShell extends StatelessWidget {
   static const _destinations = [
     NavigationDestinationData(
       label: 'Home',
-      icon: Icons.home_outlined,
-      selectedIcon: Icons.home,
+      asset: 'assets/icons/nav_home.svg',
     ),
     NavigationDestinationData(
       label: 'Train',
-      icon: Icons.fitness_center_outlined,
-      selectedIcon: Icons.fitness_center,
+      asset: 'assets/icons/nav_train.svg',
     ),
     NavigationDestinationData(
-      label: 'Fuel',
-      icon: Icons.restaurant_outlined,
-      selectedIcon: Icons.restaurant,
+      label: 'Food',
+      asset: 'assets/icons/nav_food.svg',
     ),
     NavigationDestinationData(
       label: 'Progress',
-      icon: Icons.show_chart_outlined,
-      selectedIcon: Icons.show_chart,
+      asset: 'assets/icons/nav_progress.svg',
     ),
   ];
 
@@ -55,7 +54,14 @@ class AppShell extends StatelessWidget {
       onDestinationSelected: (index) {
         // The home summary aggregates every feature; refresh it on return.
         WellnessStore.instance.reloadIfNewDay();
-        if (index == 0 || index == 3) context.read<DashboardCubit>().load();
+        if (index != 1) context.read<DashboardCubit>().load();
+        if (index == 0 || index == 3) {
+          unawaited(
+            context.read<HealthSyncCubit>().syncIfStale(
+              maxAge: const Duration(minutes: 2),
+            ),
+          );
+        }
         navigationShell.goBranch(
           index,
           initialLocation: index == navigationShell.currentIndex,
@@ -88,17 +94,24 @@ class _FloatingBars extends StatelessWidget {
         final path = router.routeInformationProvider.value.uri.path;
         final onActive = path == AppRoutes.activeWorkout;
         final onTracking = path == AppRoutes.tracking;
-        return Align(
-          alignment: Alignment.bottomCenter,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 720),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (!onActive) const RestTimerBar(),
-                if (!onActive) const _WorkoutBar(),
-                if (!onTracking) const _RecordingBar(),
-              ],
+        // With an overlaying (glass) nav bar the body's bottom padding is the
+        // bar's height; lift the floating bars above it.
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.paddingOf(context).bottom,
+          ),
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 720),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (!onActive) const RestTimerBar(),
+                  if (!onActive) const _WorkoutBar(),
+                  if (!onTracking) const _RecordingBar(),
+                ],
+              ),
             ),
           ),
         );
@@ -191,7 +204,7 @@ class _WorkoutBar extends StatelessWidget {
           foreground: v.bg,
           dot: v.acc,
           title: workout.name,
-          onTap: () => context.go(AppRoutes.activeWorkout),
+          onTap: () => context.push(AppRoutes.activeWorkout),
           trailing: StreamBuilder<int>(
             stream: Stream.periodic(const Duration(seconds: 1), (i) => i),
             builder: (context, _) => Text(
@@ -225,7 +238,7 @@ class _RecordingBar extends StatelessWidget {
           border: Border.all(color: const Color(0x1FFFFFFF)),
           title:
               '${state.type.label} · ${units.fd(km, 2)} ${units.distanceUnit}',
-          onTap: () => context.go(AppRoutes.tracking),
+          onTap: () => context.push(AppRoutes.tracking),
           trailing: Text(
             (snap?.elapsed ?? Duration.zero).clock,
             style: VeyroText.display(24, color: const Color(0xFFF5F3F0)),

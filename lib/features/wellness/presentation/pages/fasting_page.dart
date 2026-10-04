@@ -3,6 +3,7 @@ import 'package:fitness_trakcer/core/theme/veyro_text.dart';
 import 'package:fitness_trakcer/core/units/unit_formatter.dart';
 import 'package:fitness_trakcer/core/widgets/veyro_charts.dart';
 import 'package:fitness_trakcer/core/widgets/veyro_extras.dart';
+import 'package:fitness_trakcer/core/widgets/veyro_pickers.dart';
 import 'package:fitness_trakcer/core/widgets/veyro_widgets.dart';
 import 'package:fitness_trakcer/features/wellness/presentation/wellness_format.dart';
 import 'package:fitness_trakcer/features/wellness/presentation/wellness_store.dart';
@@ -264,9 +265,9 @@ class FastingPage extends StatelessWidget {
   }
 
   Future<void> _editStart(BuildContext context, WellnessStore store) async {
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.fromDateTime(store.fastStart),
+    final picked = await showAdaptiveTimePicker(
+      context,
+      initial: TimeOfDay.fromDateTime(store.fastStart),
     );
     if (picked == null) return;
     final now = DateTime.now();

@@ -2,6 +2,8 @@ import 'package:fitness_trakcer/core/usecase/use_case.dart';
 import 'package:fitness_trakcer/core/utils/clock.dart';
 import 'package:fitness_trakcer/core/utils/date_range.dart';
 import 'package:fitness_trakcer/core/utils/result.dart';
+import 'package:fitness_trakcer/features/gps_tracking/domain/repositories/tracked_activity_repository.dart';
+import 'package:fitness_trakcer/features/gps_tracking/domain/services/training_sessions.dart';
 import 'package:fitness_trakcer/features/profile/domain/repositories/profile_repository.dart';
 import 'package:fitness_trakcer/features/recovery/domain/entities/heart_rate_zones.dart';
 import 'package:fitness_trakcer/features/recovery/domain/entities/muscle_recovery.dart';
@@ -14,6 +16,7 @@ import 'package:injectable/injectable.dart';
 class GetRecoveryDetails implements UseCase<RecoveryDetails, NoParams> {
   const GetRecoveryDetails(
     this._workouts,
+    this._tracked,
     this._recovery,
     this._profile,
     this._clock,
@@ -22,6 +25,7 @@ class GetRecoveryDetails implements UseCase<RecoveryDetails, NoParams> {
   static const zoneDays = 7;
 
   final WorkoutRepository _workouts;
+  final TrackedActivityRepository _tracked;
   final RecoveryRepository _recovery;
   final ProfileRepository _profile;
   final Clock _clock;
@@ -32,7 +36,15 @@ class GetRecoveryDetails implements UseCase<RecoveryDetails, NoParams> {
     final workouts = (await _workouts.getCompletedWorkouts(
       DateRange.lastDays(14, until: now),
     )).getOrThrow();
-    final muscles = MuscleRecoveryCalculator.compute(workouts, now);
+    final tracked =
+        (await _tracked.getActivities(DateRange.lastDays(14, until: now)))
+            .dataOrNull ??
+        const [];
+    final muscles = MuscleRecoveryCalculator.compute(
+      workouts,
+      now,
+      imported: TrainingSessions.withoutDuplicates(workouts, tracked, now: now),
+    );
 
     // Zones need Health heart rate and an age for the max-HR estimate. Either
     // can be missing, so a failure here only hides the zones card.

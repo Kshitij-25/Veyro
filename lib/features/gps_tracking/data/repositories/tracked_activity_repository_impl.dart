@@ -23,14 +23,49 @@ class TrackedActivityRepositoryImpl implements TrackedActivityRepository {
   @override
   Stream<List<TrackedActivity>> watchActivities() => _localDataSource
       .watchAll()
-      .map((rows) => rows.map((row) => row.toEntity()).toList());
+      .map((rows) => _dedupe(rows.map((row) => row.toEntity()).toList()));
 
   @override
   Future<Result<List<TrackedActivity>>> getActivities(DateRange range) =>
       guard(() async {
         final rows = await _localDataSource.getRange(range);
-        return rows.map((row) => row.toEntity()).toList();
+        return _dedupe(rows.map((row) => row.toEntity()).toList());
       });
+
+  /// iPhone and Watch can each record the same session. Of Health-imported
+  /// activities that overlap by more than half, keep the fuller one.
+  static List<TrackedActivity> _dedupe(List<TrackedActivity> all) {
+    bool overlaps(TrackedActivity a, TrackedActivity b) {
+      final from = a.startedAt.isAfter(b.startedAt) ? a.startedAt : b.startedAt;
+      final to = a.endedAt.isBefore(b.endedAt) ? a.endedAt : b.endedAt;
+      final shared = to.difference(from).inSeconds;
+      if (shared <= 0) return false;
+      final shorter = [
+        a.endedAt.difference(a.startedAt).inSeconds,
+        b.endedAt.difference(b.startedAt).inSeconds,
+      ].reduce((x, y) => x < y ? x : y);
+      return shorter <= 0 || shared / shorter > 0.5;
+    }
+
+    double weight(TrackedActivity a) => a.caloriesKcal + a.distanceMeters / 100;
+
+    final kept = <TrackedActivity>[];
+    for (final a in all) {
+      if (!a.id.startsWith('health-')) {
+        kept.add(a);
+        continue;
+      }
+      final i = kept.indexWhere(
+        (k) => k.id.startsWith('health-') && overlaps(k, a),
+      );
+      if (i == -1) {
+        kept.add(a);
+      } else if (weight(a) > weight(kept[i])) {
+        kept[i] = a;
+      }
+    }
+    return kept;
+  }
 
   @override
   Future<Result<TrackedActivity>> getActivity(String id) => guard(() async {

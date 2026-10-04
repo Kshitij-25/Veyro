@@ -16,6 +16,7 @@ import 'package:fitness_trakcer/features/activity/domain/entities/health_access_
 import 'package:fitness_trakcer/features/activity/domain/usecases/request_health_access.dart';
 import 'package:fitness_trakcer/features/dashboard/domain/entities/dashboard_summary.dart';
 import 'package:fitness_trakcer/features/dashboard/presentation/cubit/dashboard_cubit.dart';
+import 'package:fitness_trakcer/features/health_sync/presentation/cubit/health_sync_cubit.dart';
 import 'package:fitness_trakcer/features/profile/presentation/unit_system_context.dart';
 import 'package:fitness_trakcer/features/routines/domain/usecases/start_workout_from_routine.dart';
 import 'package:fitness_trakcer/features/wellness/presentation/pages/habits_page.dart';
@@ -51,7 +52,13 @@ class DashboardPage extends StatelessWidget {
             }
             return ContentConstraint(
               child: RefreshIndicator.adaptive(
-                onRefresh: context.read<DashboardCubit>().load,
+                onRefresh: () async {
+                  final cubit = context.read<DashboardCubit>();
+                  await context.read<HealthSyncCubit>().syncIfStale(
+                    maxAge: Duration.zero,
+                  );
+                  await cubit.load();
+                },
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 110),
                   children: [
@@ -59,7 +66,7 @@ class DashboardPage extends StatelessWidget {
                       'Today',
                       kicker: DateFormat('EEEE, MMM d').format(summary.date),
                       trailing: _ProfileButton(
-                        onTap: () => context.go(AppRoutes.settings),
+                        onTap: () => context.push(AppRoutes.settings),
                       ),
                     ),
                     const SizedBox(height: 14),
@@ -73,7 +80,7 @@ class DashboardPage extends StatelessWidget {
                         _CoachCard(summary: summary),
                       ],
                       right: [
-                        const _FuelRow(),
+                        const _FoodRow(),
                         const _HabitsCard(),
                         _ReportCard(summary: summary),
                         IntrinsicHeight(
@@ -146,7 +153,7 @@ class _StepsHero extends StatelessWidget {
       color: v.ink,
       radius: 26,
       padding: const EdgeInsets.all(18),
-      onTap: () => context.go(AppRoutes.activity),
+      onTap: () => context.push(AppRoutes.activity),
       child: Row(
         children: [
           SizedBox(
@@ -252,7 +259,7 @@ class _TrainingCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               child: InkWell(
                 borderRadius: BorderRadius.circular(16),
-                onTap: () => context.go(AppRoutes.activeWorkout),
+                onTap: () => context.push(AppRoutes.activeWorkout),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -315,7 +322,7 @@ class _TrainingCard extends StatelessWidget {
                 VButton(
                   'Start',
                   style: VButtonStyle.ink,
-                  onPressed: () => context.go(AppRoutes.routines),
+                  onPressed: () => context.push(AppRoutes.routines),
                 ),
               ],
             ),
@@ -375,7 +382,7 @@ class _GoalsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final v = context.veyro;
     return VCard(
-      onTap: () => context.go(AppRoutes.goals),
+      onTap: () => context.push(AppRoutes.goals),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -423,12 +430,12 @@ class _QuickChips extends StatelessWidget {
   Widget build(BuildContext context) {
     final v = context.veyro;
     final chips = <(String, VoidCallback)>[
-      ('Log food', () => context.go(AppRoutes.foodSearch)),
+      ('Log food', () => context.push(AppRoutes.foodSearch)),
       ('+ Water', () => WellnessStore.instance.addWater(250)),
       ('Weigh in', () => context.go(AppRoutes.progress)),
-      ('Track run', () => context.go(AppRoutes.tracking)),
-      ('Timer', () => context.go(AppRoutes.timers)),
-      ('Mobility', () => context.go(AppRoutes.mind)),
+      ('Track run', () => context.push(AppRoutes.tracking)),
+      ('Timer', () => context.push(AppRoutes.timers)),
+      ('Mobility', () => context.push(AppRoutes.mind)),
     ];
     return SizedBox(
       height: 40,
@@ -518,7 +525,7 @@ class _ReadinessCard extends StatelessWidget {
     final rhr = recovery?.latestRestingHr;
     return VCard(
       radius: 26,
-      onTap: () => context.go(AppRoutes.recovery),
+      onTap: () => context.push(AppRoutes.recovery),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -573,8 +580,8 @@ class _ReadinessCard extends StatelessWidget {
   }
 }
 
-class _FuelRow extends StatelessWidget {
-  const _FuelRow();
+class _FoodRow extends StatelessWidget {
+  const _FoodRow();
 
   @override
   Widget build(BuildContext context) {
@@ -590,7 +597,7 @@ class _FuelRow extends StatelessWidget {
               Expanded(
                 flex: 12,
                 child: VCard(
-                  onTap: () => context.go(AppRoutes.fuel),
+                  onTap: () => context.go(AppRoutes.food),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -613,7 +620,7 @@ class _FuelRow extends StatelessWidget {
               Expanded(
                 flex: 10,
                 child: VCard(
-                  onTap: () => context.go(AppRoutes.fuel),
+                  onTap: () => context.go(AppRoutes.food),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -710,7 +717,7 @@ class _CoachCard extends StatelessWidget {
                 VButton(
                   'See recovery',
                   style: VButtonStyle.soft,
-                  onPressed: () => context.go(AppRoutes.recovery),
+                  onPressed: () => context.push(AppRoutes.recovery),
                 ),
             ],
           ),
@@ -736,7 +743,7 @@ class _HabitsCard extends StatelessWidget {
               children: [
                 const VLabel('Habits today'),
                 InkWell(
-                  onTap: () => context.go(AppRoutes.habits),
+                  onTap: () => context.push(AppRoutes.habits),
                   child: Text(
                     store.habits.isEmpty
                         ? 'Add ›'
@@ -761,7 +768,7 @@ class _HabitsCard extends StatelessWidget {
                       'Add',
                       style: VButtonStyle.soft,
                       height: 34,
-                      onPressed: () => context.go(AppRoutes.habits),
+                      onPressed: () => context.push(AppRoutes.habits),
                     ),
                   ],
                 ),
@@ -807,14 +814,14 @@ class _ReportCard extends StatelessWidget {
     final top = mins.fold(0, (a, b) => a > b ? a : b);
     final delta = r.activeMinutes - r.prevActiveMinutes;
     final subtitle = r.isEmpty
-        ? 'No activity in the last 7 days ›'
+        ? 'No activity this week ›'
         : r.prevActiveMinutes == 0
         ? 'Your first full week of data ›'
         : delta == 0
         ? 'Same as last week ›'
         : '${delta > 0 ? 'Up' : 'Down'} ${delta.abs()} minutes on last week ›';
     return VCard(
-      onTap: () => context.go(AppRoutes.report),
+      onTap: () => context.push(AppRoutes.report),
       child: Row(
         children: [
           Expanded(

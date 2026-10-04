@@ -79,7 +79,7 @@ class _SleepPageState extends State<SleepPage> {
                     state.status == ViewStatus.initial) {
                   return const Padding(
                     padding: EdgeInsets.all(32),
-                    child: Center(child: CircularProgressIndicator()),
+                    child: Center(child: CircularProgressIndicator.adaptive()),
                   );
                 }
                 if (state.nights.isEmpty && state.history.isEmpty) {

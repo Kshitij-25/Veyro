@@ -161,7 +161,7 @@ class VBackButton extends StatelessWidget {
           foregroundColor: v.ink,
         ),
         onPressed: onPressed,
-        icon: const Icon(Icons.chevron_left, size: 24),
+        icon: Icon(Icons.adaptive.arrow_back, size: 22),
       ),
     );
   }
@@ -421,7 +421,7 @@ void veyroBack(BuildContext context, {String? fallback}) {
   if (context.canPop()) {
     context.pop();
   } else if (fallback != null) {
-    context.go(fallback);
+    context.push(fallback);
   }
 }
 
@@ -532,7 +532,7 @@ class VTextAction extends StatelessWidget {
   );
 }
 
-/// Switch styled like the Veyro design (accent when on).
+/// Platform switch (Cupertino on iOS) in the Veyro accent when on.
 class VSwitch extends StatelessWidget {
   const VSwitch({required this.value, required this.onChanged, super.key});
 
@@ -542,30 +542,12 @@ class VSwitch extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final v = context.veyro;
-    return GestureDetector(
-      onTap: () => onChanged(!value),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        width: 52,
-        height: 30,
-        decoration: BoxDecoration(
-          color: value ? v.acc : v.mute.withValues(alpha: .4),
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: AnimatedAlign(
-          duration: const Duration(milliseconds: 150),
-          alignment: value ? Alignment.centerRight : Alignment.centerLeft,
-          child: Container(
-            margin: const EdgeInsets.all(3),
-            width: 24,
-            height: 24,
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-            ),
-          ),
-        ),
-      ),
+    return Switch.adaptive(
+      value: value,
+      onChanged: onChanged,
+      activeTrackColor: v.acc,
+      activeThumbColor: Colors.white,
+      inactiveTrackColor: v.mute.withValues(alpha: .4),
     );
   }
 }

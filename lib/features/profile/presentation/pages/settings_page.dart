@@ -54,7 +54,8 @@ class SettingsPage extends StatelessWidget {
                     Row(
                       children: [
                         VBackButton(
-                          onPressed: () => context.go(AppRoutes.home),
+                          onPressed: () =>
+                              veyroBack(context, fallback: AppRoutes.home),
                         ),
                       ],
                     ),
@@ -67,29 +68,29 @@ class SettingsPage extends StatelessWidget {
                           (
                             'Settings',
                             '',
-                            () => context.go(AppRoutes.preferences),
+                            () => context.push(AppRoutes.preferences),
                           ),
                           (
                             'Devices & integrations',
                             context.watch<HealthSyncCubit>().state.isConnected
                                 ? 'Health connected'
                                 : 'Not connected',
-                            () => context.go(AppRoutes.devices),
+                            () => context.push(AppRoutes.devices),
                           ),
                           (
                             'Permissions',
-                            'Health, notifications, location, camera',
-                            () => context.go(AppRoutes.permissionsSettings),
+                            'Health, alerts, location, camera',
+                            () => context.push(AppRoutes.permissionsSettings),
                           ),
                           (
                             'Nutrition targets',
                             '${thousands(store.kcalGoal)} kcal',
-                            () => context.go(AppRoutes.nutritionTargets),
+                            () => context.push(AppRoutes.nutritionTargets),
                           ),
                           (
                             'Habits & supplements',
                             '${store.habitsDone} of ${store.habits.length} today',
-                            () => context.go(AppRoutes.habits),
+                            () => context.push(AppRoutes.habits),
                           ),
                           ('Export my data', '', () => _export(context)),
                           ('Restore from backup', '', () => _restore(context)),
@@ -111,7 +112,7 @@ class SettingsPage extends StatelessWidget {
                                   Icons.chevron_right,
                                   color: v.mute,
                                 ),
-                                onTap: () => context.go(AppRoutes.reminders),
+                                onTap: () => context.push(AppRoutes.reminders),
                               ),
                               for (final l in links) ...[
                                 const Divider(),
@@ -127,11 +128,18 @@ class SettingsPage extends StatelessWidget {
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       if (l.$2.isNotEmpty)
-                                        Text(
-                                          l.$2,
-                                          style: VeyroText.body(
-                                            13,
-                                            color: v.mute,
+                                        ConstrainedBox(
+                                          constraints: const BoxConstraints(
+                                            maxWidth: 150,
+                                          ),
+                                          child: Text(
+                                            l.$2,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: VeyroText.body(
+                                              13,
+                                              color: v.mute,
+                                            ),
                                           ),
                                         ),
                                       Icon(Icons.chevron_right, color: v.mute),

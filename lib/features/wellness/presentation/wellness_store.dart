@@ -2,6 +2,8 @@ import 'package:drift/drift.dart' show Value;
 import 'package:fitness_trakcer/core/database/app_database.dart';
 import 'package:fitness_trakcer/core/di/injection.dart';
 import 'package:fitness_trakcer/core/utils/id_generator.dart';
+import 'package:fitness_trakcer/features/profile/domain/entities/user_profile.dart';
+import 'package:fitness_trakcer/features/profile/domain/services/calorie_target.dart';
 import 'package:fitness_trakcer/features/reminders/domain/services/reminder_scheduler.dart';
 import 'package:fitness_trakcer/features/wellness/data/datasources/wellness_local_data_source.dart';
 import 'package:flutter/material.dart';
@@ -119,7 +121,9 @@ class WellnessStore extends ChangeNotifier {
     if (data == null) return;
     _today = _dayKey(DateTime.now());
 
-    kcalGoal = int.tryParse(await data.getSetting('kcal_goal') ?? '') ?? 2400;
+    final savedKcal = int.tryParse(await data.getSetting('kcal_goal') ?? '');
+    _kcalIsCustom = savedKcal != null;
+    kcalGoal = savedKcal ?? _profileKcal ?? 2400;
     themeMode = switch (await data.getSetting('theme_mode')) {
       'light' => ThemeMode.light,
       'dark' => ThemeMode.dark,
@@ -266,7 +270,27 @@ class WellnessStore extends ChangeNotifier {
     _data?.setSetting('water_goal_ml', '$waterGoalMl');
   }
 
+  bool _kcalIsCustom = false;
+  int? _profileKcal;
+
+  /// The calorie target worked out from the profile, when there is one.
+  int? get suggestedKcal => _profileKcal;
+
+  /// Until the user picks their own calorie goal it follows the profile.
+  void useProfile(UserProfile? profile) {
+    _profileKcal = profile == null
+        ? null
+        : CalorieTarget.forProfile(profile, DateTime.now());
+    if (_kcalIsCustom || _profileKcal == null || kcalGoal == _profileKcal) {
+      return;
+    }
+    kcalGoal = _profileKcal!;
+    _applyMacros();
+    notifyListeners();
+  }
+
   void setKcalGoal(int kcal, {String? preset}) {
+    _kcalIsCustom = true;
     kcalGoal = kcal.clamp(1200, 5000);
     macroPreset = preset ?? macroPreset;
     _applyMacros();

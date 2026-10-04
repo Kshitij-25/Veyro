@@ -570,14 +570,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i369.Clock>(),
       ),
     );
-    gh.lazySingleton<_i261.GetRecoveryDetails>(
-      () => _i261.GetRecoveryDetails(
-        gh<_i956.WorkoutRepository>(),
-        gh<_i683.RecoveryRepository>(),
-        gh<_i910.ProfileRepository>(),
-        gh<_i369.Clock>(),
-      ),
-    );
     gh.lazySingleton<_i372.DeleteWorkout>(
       () => _i372.DeleteWorkout(gh<_i956.WorkoutRepository>()),
     );
@@ -595,6 +587,15 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i896.WatchWorkoutHistory>(
       () => _i896.WatchWorkoutHistory(gh<_i956.WorkoutRepository>()),
+    );
+    gh.lazySingleton<_i261.GetRecoveryDetails>(
+      () => _i261.GetRecoveryDetails(
+        gh<_i956.WorkoutRepository>(),
+        gh<_i1059.TrackedActivityRepository>(),
+        gh<_i683.RecoveryRepository>(),
+        gh<_i910.ProfileRepository>(),
+        gh<_i369.Clock>(),
+      ),
     );
     gh.lazySingleton<_i1056.LogBodyMeasurement>(
       () => _i1056.LogBodyMeasurement(
@@ -727,13 +728,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i225.WatchExercises>(
       () => _i225.WatchExercises(gh<_i7.ExerciseRepository>()),
-    );
-    gh.lazySingleton<_i981.GetProgramProgress>(
-      () => _i981.GetProgramProgress(
-        gh<_i77.ProgramRepository>(),
-        gh<_i956.WorkoutRepository>(),
-        gh<_i369.Clock>(),
-      ),
     );
     gh.factory<_i107.FoodCatalogCubit>(
       () => _i107.FoodCatalogCubit(
@@ -870,6 +864,14 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i951.AppRouter>(
       () => _i951.AppRouter(gh<_i946.ProfileCubit>(), gh<_i20.StartupGate>()),
+    );
+    gh.lazySingleton<_i981.GetProgramProgress>(
+      () => _i981.GetProgramProgress(
+        gh<_i77.ProgramRepository>(),
+        gh<_i956.WorkoutRepository>(),
+        gh<_i1059.TrackedActivityRepository>(),
+        gh<_i369.Clock>(),
+      ),
     );
     gh.lazySingleton<_i968.CreateGoal>(
       () => _i968.CreateGoal(

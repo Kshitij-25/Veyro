@@ -9,6 +9,7 @@ import 'package:fitness_trakcer/features/goals/domain/entities/goal_period.dart'
 import 'package:fitness_trakcer/features/goals/domain/entities/goal_progress.dart';
 import 'package:fitness_trakcer/features/goals/domain/entities/goal_type.dart';
 import 'package:fitness_trakcer/features/gps_tracking/domain/repositories/tracked_activity_repository.dart';
+import 'package:fitness_trakcer/features/gps_tracking/domain/services/training_sessions.dart';
 import 'package:fitness_trakcer/features/workout/domain/repositories/workout_repository.dart';
 import 'package:injectable/injectable.dart';
 
@@ -160,7 +161,15 @@ class GoalProgressCalculator {
         final workouts =
             (await _workouts.getCompletedWorkouts(range)).dataOrNull ??
             const [];
-        for (final workout in workouts) {
+        final imported =
+            (await _trackedActivities.getActivities(range)).dataOrNull ??
+            const [];
+        final sessions = TrainingSessions.merge(
+          workouts,
+          imported,
+          now: _clock.now(),
+        );
+        for (final workout in sessions) {
           final key = workout.startedAt.startOfWeek.dayKey;
           totals[key] = (totals[key] ?? 0) + 1;
         }
@@ -168,9 +177,23 @@ class GoalProgressCalculator {
         final activities =
             (await _trackedActivities.getActivities(range)).dataOrNull ??
             const [];
+        final tracked = <int, double>{};
         for (final activity in activities) {
           final key = activity.startedAt.startOfWeek.dayKey;
-          totals[key] = (totals[key] ?? 0) + activity.distanceMeters;
+          tracked[key] = (tracked[key] ?? 0) + activity.distanceMeters;
+        }
+        // Daily Health distance also covers walking that was never logged as
+        // a workout; use whichever is larger, as the weekly report does.
+        final days = (await _activity.getRange(range)).dataOrNull ?? const [];
+        final daily = <int, double>{};
+        for (final d in days) {
+          final key = d.date.startOfWeek.dayKey;
+          daily[key] = (daily[key] ?? 0) + d.distanceMeters;
+        }
+        for (final key in {...tracked.keys, ...daily.keys}) {
+          final a = tracked[key] ?? 0;
+          final b = daily[key] ?? 0;
+          totals[key] = a > b ? a : b;
         }
       default:
         break;

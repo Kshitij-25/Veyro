@@ -62,13 +62,13 @@ class BodyMetricsPage extends StatelessWidget {
                         VButton(
                           'Goals',
                           style: VButtonStyle.card,
-                          onPressed: () => context.go(AppRoutes.goals),
+                          onPressed: () => context.push(AppRoutes.goals),
                         ),
                         const SizedBox(width: 8),
                         VButton(
                           'Badges',
                           style: VButtonStyle.card,
-                          onPressed: () => context.go(AppRoutes.achievements),
+                          onPressed: () => context.push(AppRoutes.achievements),
                         ),
                       ],
                     ),
@@ -494,7 +494,7 @@ class _ProgressTiles extends StatelessWidget {
                 label: t.$1,
                 value: t.$2,
                 valueSize: 26,
-                onTap: () => context.go(t.$3),
+                onTap: () => context.push(t.$3),
               ),
           ],
         );

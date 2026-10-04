@@ -63,12 +63,12 @@ class ActivityPage extends StatelessWidget {
                             'History',
                             style: VButtonStyle.card,
                             onPressed: () =>
-                                context.go(AppRoutes.trackingHistory),
+                                context.push(AppRoutes.trackingHistory),
                           ),
                           const SizedBox(width: 8),
                           VButton(
                             '● Track',
-                            onPressed: () => context.go(AppRoutes.tracking),
+                            onPressed: () => context.push(AppRoutes.tracking),
                           ),
                         ],
                       ),

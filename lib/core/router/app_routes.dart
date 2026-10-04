@@ -31,11 +31,11 @@ abstract final class AppRoutes {
   static const trackingHistory = '$activity/history';
   static const trackingSummary = '$activity/summary';
 
-  static const fuel = '/fuel';
-  static const foodSearch = '$fuel/log';
-  static const scan = '$fuel/scan';
-  static const fasting = '$fuel/fasting';
-  static const nutritionTargets = '$fuel/targets';
+  static const food = '/food';
+  static const foodSearch = '$food/log';
+  static const scan = '$food/scan';
+  static const fasting = '$food/fasting';
+  static const nutritionTargets = '$food/targets';
 
   static const progress = '/progress';
   static const goals = '$progress/goals';

@@ -96,7 +96,7 @@ class _ShortcutButton extends StatelessWidget {
         style: VButtonStyle.card,
         height: 50,
         radius: 16,
-        onPressed: () => context.go(route),
+        onPressed: () => context.push(route),
       ),
     );
   }
@@ -159,7 +159,7 @@ class _CurrentWorkoutCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(15),
                       ),
                     ),
-                    onPressed: () => context.go(AppRoutes.activeWorkout),
+                    onPressed: () => context.push(AppRoutes.activeWorkout),
                     child: const Text('Continue'),
                   ),
                 ),
@@ -261,7 +261,7 @@ class _HistoryRow extends StatelessWidget {
       units,
     ).round();
     return InkWell(
-      onTap: () => context.go(AppRoutes.workoutDetail(workout.id)),
+      onTap: () => context.push(AppRoutes.workoutDetail(workout.id)),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
@@ -342,7 +342,7 @@ class _Explore extends StatelessWidget {
             for (final t in tiles)
               VCard(
                 padding: const EdgeInsets.all(14),
-                onTap: () => context.go(t.$3),
+                onTap: () => context.push(t.$3),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

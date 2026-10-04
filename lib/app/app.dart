@@ -8,6 +8,7 @@ import 'package:fitness_trakcer/features/gps_tracking/domain/entities/tracking_s
 import 'package:fitness_trakcer/features/gps_tracking/presentation/cubit/tracking_cubit.dart';
 import 'package:fitness_trakcer/features/health_sync/presentation/cubit/health_sync_cubit.dart';
 import 'package:fitness_trakcer/features/profile/presentation/cubit/profile_cubit.dart';
+import 'package:fitness_trakcer/features/profile/presentation/cubit/profile_state.dart';
 import 'package:fitness_trakcer/features/wellness/presentation/wellness_store.dart';
 import 'package:fitness_trakcer/features/workout/presentation/cubit/active_workout_cubit.dart';
 import 'package:fitness_trakcer/features/workout/presentation/cubit/rest_timer_cubit.dart';
@@ -31,16 +32,21 @@ class App extends StatelessWidget {
         BlocProvider.value(value: getIt<HealthSyncCubit>()),
       ],
       child: _HealthAutoSync(
-        child: ListenableBuilder(
-          listenable: WellnessStore.instance,
-          builder: (context, _) => MaterialApp.router(
-            title: 'Veyro',
-            debugShowCheckedModeBanner: false,
-            theme: AppTheme.light,
-            darkTheme: AppTheme.dark,
-            themeMode: WellnessStore.instance.themeMode,
-            routerConfig: getIt<AppRouter>().config,
-            scrollBehavior: const _AppScrollBehavior(),
+        child: BlocListener<ProfileCubit, ProfileState>(
+          listenWhen: (a, b) => a.profile != b.profile,
+          listener: (context, state) =>
+              WellnessStore.instance.useProfile(state.profile),
+          child: ListenableBuilder(
+            listenable: WellnessStore.instance,
+            builder: (context, _) => MaterialApp.router(
+              title: 'Veyro',
+              debugShowCheckedModeBanner: false,
+              theme: AppTheme.light,
+              darkTheme: AppTheme.dark,
+              themeMode: WellnessStore.instance.themeMode,
+              routerConfig: getIt<AppRouter>().config,
+              scrollBehavior: const _AppScrollBehavior(),
+            ),
           ),
         ),
       ),
@@ -67,6 +73,10 @@ class _HealthAutoSyncState extends State<_HealthAutoSync>
     WidgetsBinding.instance.addObserver(this);
     WellnessStore.instance.addListener(_syncAwake);
     context.read<HealthSyncCubit>().start();
+    // The profile may already be loaded: the listener below only sees changes.
+    WellnessStore.instance.useProfile(
+      context.read<ProfileCubit>().state.profile,
+    );
   }
 
   /// Keeps the screen on during a workout or recording when the setting is on.

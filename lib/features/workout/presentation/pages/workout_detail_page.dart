@@ -93,7 +93,7 @@ class WorkoutDetailPage extends StatelessWidget {
               tooltip: 'Share',
               onPressed: () =>
                   shareSummary(context, _shareText(workout, units)),
-              icon: const Icon(Icons.ios_share, size: 20),
+              icon: Icon(Icons.adaptive.share, size: 20),
             ),
           ),
           children: [

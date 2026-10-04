@@ -182,7 +182,7 @@ class ExerciseLibraryPage extends StatelessWidget {
                                   InkWell(
                                     onTap: selectionMode
                                         ? () => context.pop(exercise)
-                                        : () => context.go(
+                                        : () => context.push(
                                             AppRoutes.exerciseDetail,
                                             extra: exercise,
                                           ),

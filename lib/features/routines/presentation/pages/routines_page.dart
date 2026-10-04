@@ -35,7 +35,7 @@ class RoutinesPage extends StatelessWidget {
           action: VButton(
             '+ New',
             height: 36,
-            onPressed: () => context.go(AppRoutes.routineEditor()),
+            onPressed: () => context.push(AppRoutes.routineEditor()),
           ),
           children: [
             ?message,
@@ -46,7 +46,7 @@ class RoutinesPage extends StatelessWidget {
                   children: [
                     InkWell(
                       onTap: () =>
-                          context.go(AppRoutes.routineEditor(routine.id)),
+                          context.push(AppRoutes.routineEditor(routine.id)),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [

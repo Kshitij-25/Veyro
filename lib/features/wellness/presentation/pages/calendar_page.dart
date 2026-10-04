@@ -16,15 +16,68 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 const _blue = Color(0xFF2F6FE5);
+const _violet = Color(0xFF8B5CF6);
 
-enum _Kind { strength, run, cycle, walk, other }
+enum _Kind {
+  strength('Strength'),
+  run('Run'),
+  cycle('Cycle'),
+  walk('Walk'),
+  mobility('Mobility'),
+  other('Other');
+
+  const _Kind(this.label);
+
+  final String label;
+
+  /// Groups an imported workout (Apple Health / Health Connect names such as
+  /// "Functional strength training" or "Core training") for the colour code.
+  static _Kind fromTitle(String title) {
+    final t = title.toLowerCase();
+    const strengthWords = [
+      'strength',
+      'core',
+      'weight',
+      'resistance',
+      'calisthenic',
+      'hiit',
+      'high intensity',
+      'cross',
+      'circuit',
+      'bootcamp',
+      'gymnastics',
+      'kickboxing',
+      'boxing',
+      'martial',
+    ];
+    const mobilityWords = [
+      'yoga',
+      'pilates',
+      'stretch',
+      'flexib',
+      'mind',
+      'cooldown',
+      'cool down',
+      'tai chi',
+      'barre',
+      'breath',
+    ];
+    if (strengthWords.any(t.contains)) return _Kind.strength;
+    if (mobilityWords.any(t.contains)) return _Kind.mobility;
+    if (t.contains('run') || t.contains('jog')) return run;
+    if (t.contains('walk') || t.contains('hik')) return walk;
+    if (t.contains('cycl') || t.contains('bik')) return cycle;
+    return other;
+  }
+}
 
 class _Entry {
-  const _Entry(this.kind, this.title, this.detail);
+  const _Entry(this.kind, this.title, this.detail, this.at);
 
   final _Kind kind;
   final String title;
   final String detail;
+  final DateTime at;
 }
 
 /// Training calendar built from logged workouts and recorded or imported
@@ -83,6 +136,7 @@ class _CalendarPageState extends State<CalendarPage> {
           _Kind.strength,
           w.name,
           ['${mins}m', if (sets > 0) '$sets sets'].join(' · '),
+          w.startedAt,
         ),
       );
     }
@@ -91,7 +145,7 @@ class _CalendarPageState extends State<CalendarPage> {
         TrackedActivityType.run => _Kind.run,
         TrackedActivityType.cycle => _Kind.cycle,
         TrackedActivityType.walk => _Kind.walk,
-        TrackedActivityType.other => _Kind.other,
+        TrackedActivityType.other => _Kind.fromTitle(a.displayName),
       };
       add(
         a.startedAt,
@@ -101,9 +155,14 @@ class _CalendarPageState extends State<CalendarPage> {
           [
             if (a.distanceMeters > 0) dist(a.distanceMeters / 1000),
             '${a.movingDuration.inMinutes}m',
+            if (a.caloriesKcal > 0) '${a.caloriesKcal.round()} kcal',
           ].join(' · '),
+          a.startedAt,
         ),
       );
+    }
+    for (final list in out.values) {
+      list.sort((a, b) => a.at.compareTo(b.at));
     }
     return out;
   }
@@ -113,7 +172,7 @@ class _CalendarPageState extends State<CalendarPage> {
     final v = context.veyro;
     final units = context.unitSystem;
     final month = _month;
-    final lead = DateTime(month.year, month.month, 1).weekday % 7;
+    final lead = DateTime(month.year, month.month, 1).weekday - 1;
     final days = DateTime(month.year, month.month + 1, 0).day;
     final all = _entries((km) => '${units.fd(km)} ${units.distanceUnit}');
     Color fill(_Kind k) => switch (k) {
@@ -121,6 +180,7 @@ class _CalendarPageState extends State<CalendarPage> {
       _Kind.run => v.ink,
       _Kind.cycle => _blue,
       _Kind.walk => VeyroColors.success,
+      _Kind.mobility => _violet,
       _Kind.other => v.mute,
     };
     Color on(_Kind k) => switch (k) {
@@ -133,6 +193,10 @@ class _CalendarPageState extends State<CalendarPage> {
         : (list.map((e) => e.kind).toList()
                 ..sort((a, b) => a.index.compareTo(b.index)))
               .first;
+    List<_Kind> kinds(List<_Entry>? list) => list == null
+        ? const []
+        : ({for (final e in list) e.kind}.toList()
+            ..sort((a, b) => a.index.compareTo(b.index)));
     final activeDays = [
       for (var d = 1; d <= days; d++)
         if (all.containsKey(_key(DateTime(month.year, month.month, d)))) d,
@@ -194,7 +258,7 @@ class _CalendarPageState extends State<CalendarPage> {
               const SizedBox(height: 10),
               Row(
                 children: [
-                  for (final d in const ['S', 'M', 'T', 'W', 'T', 'F', 'S'])
+                  for (final d in const ['M', 'T', 'W', 'T', 'F', 'S', 'S'])
                     Expanded(
                       child: Center(
                         child: Text(
@@ -240,13 +304,45 @@ class _CalendarPageState extends State<CalendarPage> {
                                 width: 2,
                               ),
                             ),
-                            child: Text(
-                              '$d',
-                              style: VeyroText.body(
-                                13,
-                                weight: FontWeight.w700,
-                                color: k != null ? on(k) : v.ink,
-                              ),
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                Text(
+                                  '$d',
+                                  style: VeyroText.body(
+                                    13,
+                                    weight: FontWeight.w700,
+                                    color: k != null ? on(k) : v.ink,
+                                  ),
+                                ),
+                                // One dot per extra workout type that day.
+                                Positioned(
+                                  bottom: 3,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      for (final x in kinds(
+                                        all[_key(date)],
+                                      ).skip(1))
+                                        Container(
+                                          width: 6,
+                                          height: 6,
+                                          margin: const EdgeInsets.symmetric(
+                                            horizontal: 1,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: fill(x),
+                                            border: Border.all(
+                                              color: v.card,
+                                              width: 1,
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         );
@@ -259,14 +355,11 @@ class _CalendarPageState extends State<CalendarPage> {
                 spacing: 12,
                 runSpacing: 4,
                 children: [
-                  for (final l in [
-                    ('● Strength', v.acc),
-                    ('● Run', v.ink),
-                    ('● Cycle', _blue),
-                    ('● Walk', VeyroColors.success),
-                    ('● Other', v.mute),
-                  ])
-                    Text(l.$1, style: VeyroText.body(11.5, color: l.$2)),
+                  for (final k in _Kind.values)
+                    Text(
+                      '● ${k.label}',
+                      style: VeyroText.body(11.5, color: fill(k)),
+                    ),
                 ],
               ),
             ],
@@ -289,14 +382,29 @@ class _CalendarPageState extends State<CalendarPage> {
                 ),
               ] else
                 for (final e in selEntries) ...[
-                  Text(
-                    e.title.toUpperCase(),
-                    style: VeyroText.display(26, height: 1.1),
+                  Row(
+                    children: [
+                      Container(
+                        width: 10,
+                        height: 10,
+                        margin: const EdgeInsets.only(right: 8),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: fill(e.kind),
+                        ),
+                      ),
+                      Expanded(
+                        child: Text(
+                          e.title.toUpperCase(),
+                          style: VeyroText.display(26, height: 1.1),
+                        ),
+                      ),
+                    ],
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.only(bottom: 8, left: 18),
                     child: Text(
-                      e.detail,
+                      '${DateFormat.jm().format(e.at.toLocal())} · ${e.detail}',
                       style: VeyroText.body(13, color: v.mute),
                     ),
                   ),

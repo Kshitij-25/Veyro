@@ -88,12 +88,15 @@ class HealthSyncCubit extends Cubit<HealthSyncState> {
   }
 
   /// Called when the app returns to the foreground.
-  Future<void> syncIfStale() async {
+  ///
+  /// Screens that show today's numbers pass a shorter [maxAge] so a glance at
+  /// steps or goals is never more than a couple of minutes behind.
+  Future<void> syncIfStale({Duration maxAge = _staleAfter}) async {
     if (!state.loaded) return start();
     final last = state.lastSync;
     if (!state.isConnected || state.isSyncing) return;
     if (!WellnessStore.instance.syncHealth) return;
-    if (last != null && _clock.now().difference(last) < _staleAfter) return;
+    if (last != null && _clock.now().difference(last) < maxAge) return;
     await sync();
   }
 

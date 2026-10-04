@@ -106,8 +106,8 @@ class _ScanPageState extends State<ScanPage> {
                           foregroundColor: _fg,
                         ),
                         onPressed: () =>
-                            veyroBack(context, fallback: AppRoutes.fuel),
-                        icon: const Icon(Icons.chevron_left),
+                            veyroBack(context, fallback: AppRoutes.food),
+                        icon: Icon(Icons.adaptive.arrow_back),
                       ),
                     ),
                   ),
@@ -173,7 +173,9 @@ class _ScanPageState extends State<ScanPage> {
                         if (_stage == _Stage.looking)
                           const ColoredBox(
                             color: Color(0x99000000),
-                            child: Center(child: CircularProgressIndicator()),
+                            child: Center(
+                              child: CircularProgressIndicator.adaptive(),
+                            ),
                           ),
                       ],
                     ),

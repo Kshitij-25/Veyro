@@ -5,6 +5,7 @@ import 'package:fitness_trakcer/core/utils/date_range.dart';
 import 'package:fitness_trakcer/core/utils/result.dart';
 import 'package:fitness_trakcer/features/activity/domain/repositories/activity_repository.dart';
 import 'package:fitness_trakcer/features/gps_tracking/domain/repositories/tracked_activity_repository.dart';
+import 'package:fitness_trakcer/features/gps_tracking/domain/services/training_sessions.dart';
 import 'package:fitness_trakcer/features/report/domain/entities/weekly_report.dart';
 import 'package:fitness_trakcer/features/workout/domain/entities/workout.dart';
 import 'package:fitness_trakcer/features/workout/domain/repositories/workout_repository.dart';
@@ -29,15 +30,28 @@ class GetWeeklyReport implements UseCase<WeeklyReport, NoParams> {
   @override
   Future<Result<WeeklyReport>> call(NoParams params) => guard(() async {
     final now = _clock.now();
-    final thisWeek = DateRange.lastDays(7, until: now);
-    final lastWeek = DateRange.lastDays(
-      14,
-      until: now.subtract(const Duration(days: 7)),
+    // Same Monday-based week as Home and Goals. The previous week is cut at
+    // the same weekday so the comparison is like for like.
+    final thisWeek = DateRange.week(now);
+    final elapsed = now.startOfDay.difference(thisWeek.start).inDays + 1;
+    final prevStart = DateTime(
+      thisWeek.start.year,
+      thisWeek.start.month,
+      thisWeek.start.day - 7,
+    );
+    final lastWeek = DateRange(
+      prevStart,
+      DateTime(prevStart.year, prevStart.month, prevStart.day + elapsed),
     );
     final both = DateRange(lastWeek.start, thisWeek.end);
 
     final workouts = (await _workouts.getCompletedWorkouts(both)).getOrThrow();
-    final tracked = (await _tracked.getActivities(both)).getOrThrow();
+    final allTracked = (await _tracked.getActivities(both)).getOrThrow();
+    final tracked = TrainingSessions.withoutDuplicates(
+      workouts,
+      allTracked,
+      now: now,
+    );
     final days = (await _activity.getRange(both)).getOrThrow();
 
     final cur = _Totals();
@@ -46,6 +60,7 @@ class GetWeeklyReport implements UseCase<WeeklyReport, NoParams> {
 
     for (final w in workouts) {
       final isCur = thisWeek.contains(w.startedAt);
+      if (!isCur && !lastWeek.contains(w.startedAt)) continue;
       final t = isCur ? cur : prev;
       final minutes = w.durationAt(now).inMinutes;
       t.workouts++;
@@ -59,7 +74,9 @@ class GetWeeklyReport implements UseCase<WeeklyReport, NoParams> {
     }
     for (final a in tracked) {
       final isCur = thisWeek.contains(a.startedAt);
+      if (!isCur && !lastWeek.contains(a.startedAt)) continue;
       final t = isCur ? cur : prev;
+      t.workouts++;
       final minutes = a.movingDuration.inMinutes;
       t.minutes += minutes;
       t.kcal += a.caloriesKcal;
@@ -70,7 +87,9 @@ class GetWeeklyReport implements UseCase<WeeklyReport, NoParams> {
       }
     }
     for (final d in days) {
-      final t = thisWeek.contains(d.date) ? cur : prev;
+      final isCur = thisWeek.contains(d.date);
+      if (!isCur && !lastWeek.contains(d.date)) continue;
+      final t = isCur ? cur : prev;
       t.stepDays++;
       t.steps += d.steps;
       t.dailyKm += d.distanceMeters / 1000;
@@ -97,7 +116,7 @@ class GetWeeklyReport implements UseCase<WeeklyReport, NoParams> {
     final insights = <String>[];
     final dw = cur.workouts - prev.workouts;
     if (cur.workouts == 0) {
-      insights.add('No workouts logged in the last 7 days.');
+      insights.add('No workouts logged this week.');
     } else if (prev.workouts == 0) {
       insights.add(
         'You trained ${cur.workouts} ${cur.workouts == 1 ? 'day' : 'days'} this week.',
@@ -127,9 +146,11 @@ class GetWeeklyReport implements UseCase<WeeklyReport, NoParams> {
         );
       }
     }
-    final restDays = minutesPerDay.where((m) => m == 0).length;
+    final restDays = minutesPerDay.take(elapsed).where((m) => m == 0).length;
     if (cur.workouts > 0) {
-      insights.add('$restDays of the last 7 days had no recorded training.');
+      insights.add(
+        '$restDays of the $elapsed ${elapsed == 1 ? 'day' : 'days'} this week had no recorded training.',
+      );
     }
 
     return WeeklyReport(

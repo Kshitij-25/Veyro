@@ -5,8 +5,8 @@ plugins {
 }
 
 android {
-    namespace = "com.kshitijcodecraft.fitness_trakcer"
-    compileSdk = flutter.compileSdkVersion
+    namespace = "com.kshitijcodecraft.veyro"
+    compileSdk = maxOf(flutter.compileSdkVersion, 37)
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -18,7 +18,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.kshitijcodecraft.fitness_trakcer"
+        applicationId = "com.kshitijcodecraft.veyro"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         // Health Connect requires API 26+.

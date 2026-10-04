@@ -109,19 +109,34 @@ class HealthPackageDataSource implements HealthDataSource {
       startTime: range.start,
       endTime: range.end,
     );
-    final distance = <DateTime, double>{};
-    final energy = <DateTime, double>{};
+    // iPhone and Watch both record walking distance for the same minutes:
+    // total each source per day and keep the fullest one, not the sum.
+    final distanceBySource = <DateTime, Map<String, double>>{};
+    final energyBySource = <DateTime, Map<String, double>>{};
     for (final p in points) {
       final value = p.value;
       if (value is! NumericHealthValue) continue;
       final day = DateTime(p.dateFrom.year, p.dateFrom.month, p.dateFrom.day);
       final amount = value.numericValue.toDouble();
-      if (p.type == _distanceType) {
-        distance[day] = (distance[day] ?? 0) + amount;
-      } else if (p.type == HealthDataType.ACTIVE_ENERGY_BURNED) {
-        energy[day] = (energy[day] ?? 0) + amount;
-      }
+      final bucket = p.type == _distanceType
+          ? distanceBySource
+          : p.type == HealthDataType.ACTIVE_ENERGY_BURNED
+          ? energyBySource
+          : null;
+      if (bucket == null) continue;
+      final sources = bucket[day] ??= {};
+      sources[p.sourceId] = (sources[p.sourceId] ?? 0) + amount;
     }
+    double fullest(Map<String, double>? sources) =>
+        sources == null || sources.isEmpty
+        ? 0
+        : sources.values.reduce((a, b) => a > b ? a : b);
+    final distance = {
+      for (final e in distanceBySource.entries) e.key: fullest(e.value),
+    };
+    final energy = {
+      for (final e in energyBySource.entries) e.key: fullest(e.value),
+    };
     final summaries = <HealthDaySummary>[];
     for (final day in range.days) {
       final dayEnd = DateTime(day.year, day.month, day.day + 1);

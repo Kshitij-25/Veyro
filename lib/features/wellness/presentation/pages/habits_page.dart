@@ -5,7 +5,7 @@ import 'package:fitness_trakcer/core/widgets/veyro_widgets.dart';
 import 'package:fitness_trakcer/features/wellness/presentation/wellness_store.dart';
 import 'package:flutter/material.dart';
 
-/// Daily habits and supplements with streaks (sample data).
+/// Daily habits and supplements with streaks.
 class HabitsPage extends StatelessWidget {
   const HabitsPage({super.key});
 

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:fitness_trakcer/core/di/injection.dart';
 import 'package:fitness_trakcer/core/router/app_routes.dart';
 import 'package:fitness_trakcer/core/router/app_shell.dart';
@@ -19,6 +21,7 @@ import 'package:fitness_trakcer/features/gps_tracking/presentation/cubit/tracked
 import 'package:fitness_trakcer/features/gps_tracking/presentation/pages/tracked_activities_page.dart';
 import 'package:fitness_trakcer/features/gps_tracking/presentation/pages/tracking_page.dart';
 import 'package:fitness_trakcer/features/gps_tracking/presentation/pages/tracking_summary_page.dart';
+import 'package:fitness_trakcer/features/health_sync/presentation/cubit/health_sync_cubit.dart';
 import 'package:fitness_trakcer/features/permissions/presentation/pages/permissions_page.dart';
 import 'package:fitness_trakcer/features/profile/presentation/cubit/onboarding_cubit.dart';
 import 'package:fitness_trakcer/features/profile/presentation/cubit/profile_cubit.dart';
@@ -41,8 +44,8 @@ import 'package:fitness_trakcer/features/wellness/presentation/pages/devices_pag
 import 'package:fitness_trakcer/features/wellness/presentation/pages/discover_page.dart';
 import 'package:fitness_trakcer/features/wellness/presentation/pages/exercise_detail_page.dart';
 import 'package:fitness_trakcer/features/wellness/presentation/pages/fasting_page.dart';
+import 'package:fitness_trakcer/features/wellness/presentation/pages/food_page.dart';
 import 'package:fitness_trakcer/features/wellness/presentation/pages/food_search_page.dart';
-import 'package:fitness_trakcer/features/wellness/presentation/pages/fuel_page.dart';
 import 'package:fitness_trakcer/features/wellness/presentation/pages/habits_page.dart';
 import 'package:fitness_trakcer/features/wellness/presentation/pages/mind_page.dart';
 import 'package:fitness_trakcer/features/wellness/presentation/pages/nutrition_targets_page.dart';
@@ -108,7 +111,7 @@ class AppRouter {
         branches: [
           _homeBranch(),
           _workoutsBranch(),
-          _fuelBranch(),
+          _foodBranch(),
           _progressBranch(),
         ],
       ),
@@ -313,7 +316,16 @@ class AppRouter {
           GoRoute(
             path: 'goals',
             builder: (context, state) => BlocProvider(
-              create: (_) => getIt<GoalsCubit>()..start(),
+              create: (_) {
+                final cubit = getIt<GoalsCubit>()..start();
+                // Today's steps come from Health: pull fresh numbers first.
+                unawaited(
+                  getIt<HealthSyncCubit>()
+                      .syncIfStale(maxAge: const Duration(minutes: 2))
+                      .then((_) => cubit.refresh()),
+                );
+                return cubit;
+              },
               child: const GoalsPage(),
             ),
           ),
@@ -365,11 +377,11 @@ class AppRouter {
     ],
   );
 
-  StatefulShellBranch _fuelBranch() => StatefulShellBranch(
+  StatefulShellBranch _foodBranch() => StatefulShellBranch(
     routes: [
       GoRoute(
-        path: AppRoutes.fuel,
-        builder: (context, state) => const FuelPage(),
+        path: AppRoutes.food,
+        builder: (context, state) => const FoodPage(),
         routes: [
           GoRoute(
             path: 'log',

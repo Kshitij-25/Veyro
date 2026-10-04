@@ -3,7 +3,7 @@ import 'package:fitness_trakcer/core/theme/veyro_text.dart';
 import 'package:fitness_trakcer/core/widgets/veyro_extras.dart';
 import 'package:fitness_trakcer/core/widgets/veyro_widgets.dart';
 import 'package:fitness_trakcer/features/profile/presentation/unit_system_context.dart';
-import 'package:fitness_trakcer/features/wellness/presentation/pages/fuel_page.dart';
+import 'package:fitness_trakcer/features/wellness/presentation/pages/food_page.dart';
 import 'package:fitness_trakcer/features/wellness/presentation/wellness_format.dart';
 import 'package:fitness_trakcer/features/wellness/presentation/wellness_store.dart';
 import 'package:flutter/material.dart';
@@ -30,6 +30,17 @@ class NutritionTargetsPage extends StatelessWidget {
                   onMinus: () => store.setKcalGoal(store.kcalGoal - 50),
                   onPlus: () => store.setKcalGoal(store.kcalGoal + 50),
                 ),
+                if (store.suggestedKcal != null &&
+                    store.suggestedKcal != store.kcalGoal)
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () => store.setKcalGoal(store.suggestedKcal!),
+                      child: Text(
+                        'Use ${thousands(store.suggestedKcal!)} from your profile',
+                      ),
+                    ),
+                  ),
                 const SizedBox(height: 14),
                 VChipRow<String>(
                   options: {

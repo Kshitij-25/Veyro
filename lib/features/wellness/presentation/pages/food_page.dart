@@ -14,9 +14,9 @@ import 'package:intl/intl.dart';
 const waterBlue = Color(0xFF2F6FE5);
 const fatYellow = Color(0xFFE5A100);
 
-/// Root of the Fuel tab: calories, macros, fasting, water and the food diary.
-class FuelPage extends StatelessWidget {
-  const FuelPage({super.key});
+/// Root of the Food tab: calories, macros, fasting, water and the food diary.
+class FoodPage extends StatelessWidget {
+  const FoodPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +30,7 @@ class FuelPage extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
               children: [
                 VTitle(
-                  'Fuel',
+                  'Food',
                   kicker: DateFormat('EEEE, MMM d').format(DateTime.now()),
                   trailing: Row(
                     children: [
@@ -38,7 +38,8 @@ class FuelPage extends StatelessWidget {
                         'Targets',
                         style: VButtonStyle.card,
                         height: 36,
-                        onPressed: () => context.go(AppRoutes.nutritionTargets),
+                        onPressed: () =>
+                            context.push(AppRoutes.nutritionTargets),
                       ),
                     ],
                   ),
@@ -60,7 +61,7 @@ class FuelPage extends StatelessWidget {
                       height: 50,
                       radius: 16,
                       expand: true,
-                      onPressed: () => context.go(AppRoutes.scan),
+                      onPressed: () => context.push(AppRoutes.scan),
                     ),
                   ],
                 ),
@@ -202,7 +203,7 @@ class _FastingTile extends StatelessWidget {
     final v = context.veyro;
     return WellnessBuilder(
       builder: (context, store) => VCard(
-        onTap: () => context.go(AppRoutes.fasting),
+        onTap: () => context.push(AppRoutes.fasting),
         child: Row(
           children: [
             Expanded(
@@ -359,7 +360,7 @@ class _MealCard extends StatelessWidget {
               VButton(
                 '+ Add',
                 height: 34,
-                onPressed: () => context.go(
+                onPressed: () => context.push(
                   '${AppRoutes.foodSearch}?meal=${Uri.encodeComponent(meal)}',
                 ),
               ),

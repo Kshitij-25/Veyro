@@ -21,6 +21,26 @@ abstract class TrackedActivity with _$TrackedActivity {
 
   const TrackedActivity._();
 
+  /// A Health-imported gym-style session (functional or traditional strength,
+  /// core, HIIT...). Used where a lifting session is expected but the Watch
+  /// supplies no exercises.
+  bool get isStrengthSession {
+    if (type != TrackedActivityType.other) return false;
+    final t = displayName.toLowerCase();
+    return const [
+      'strength',
+      'weight',
+      'resistance',
+      'calisthenic',
+      'core',
+      'hiit',
+      'high intensity',
+      'cross',
+      'circuit',
+      'bootcamp',
+    ].any(t.contains);
+  }
+
   /// What to call it: the imported name, or the activity type.
   String get displayName => title ?? type.label;
 

@@ -1,4 +1,4 @@
-package com.kshitijcodecraft.fitness_trakcer
+package com.kshitijcodecraft.veyro
 
 import io.flutter.embedding.android.FlutterFragmentActivity
 

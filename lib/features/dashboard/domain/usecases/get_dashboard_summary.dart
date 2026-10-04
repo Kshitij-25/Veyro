@@ -11,6 +11,7 @@ import 'package:fitness_trakcer/features/dashboard/domain/entities/dashboard_sum
 import 'package:fitness_trakcer/features/dashboard/domain/services/coach_advisor.dart';
 import 'package:fitness_trakcer/features/goals/domain/usecases/get_goal_progress.dart';
 import 'package:fitness_trakcer/features/gps_tracking/domain/repositories/tracked_activity_repository.dart';
+import 'package:fitness_trakcer/features/gps_tracking/domain/services/training_sessions.dart';
 import 'package:fitness_trakcer/features/recovery/domain/entities/readiness_calculator.dart';
 import 'package:fitness_trakcer/features/recovery/domain/entities/recovery_snapshot.dart';
 import 'package:fitness_trakcer/features/recovery/domain/usecases/get_recovery_snapshot.dart';
@@ -56,6 +57,14 @@ class GetDashboardSummary implements UseCase<DashboardSummary, NoParams> {
     final weekWorkouts = (await _workouts.getCompletedWorkouts(
       DateRange.week(now),
     )).getOrThrow();
+    final weekTracked =
+        (await _tracked.getActivities(DateRange.week(now))).dataOrNull ??
+        const [];
+    final weekSessions = TrainingSessions.merge(
+      weekWorkouts,
+      weekTracked,
+      now: now,
+    );
     final weight = (await _getLatestWeight(const NoParams())).dataOrNull;
     final goals =
         (await _getGoalProgress(const NoParams())).dataOrNull ?? const [];
@@ -105,7 +114,7 @@ class GetDashboardSummary implements UseCase<DashboardSummary, NoParams> {
       activity: activity,
       activeWorkout: active,
       todaysRoutines: routines,
-      workoutsThisWeek: weekWorkouts.length,
+      workoutsThisWeek: weekSessions.length,
       latestWeightKg: weight,
       goals: goals,
       healthAccess: access,
